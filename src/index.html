@@ -1,0 +1,137 @@
+<html>
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+	<link type="text/css" rel="stylesheet" href="/stylesheet/main.css" >
+	<!-- jeditable,charcount,jeitable.charcounter is functional for Edit page-->
+	<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.4.2/jquery.js"></script>
+	<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.8.6/jquery-ui.min.js"></script>
+  <script type="text/javascript" src="stylesheet/add.js"></script>
+  <script type="text/javascript" src="stylesheet/autocom.js"></script>
+	<script type="text/javascript" src="stylesheet/anchor.js"></script>
+	<script type="text/javascript" src="stylesheet/blockUI.js"></script>
+	<script type="text/javascript" src="stylesheet/charcounter.js"></script>
+	<script type="text/javascript" src="stylesheet/edit.js"></script>
+	<script type="text/javascript" src="stylesheet/jeditable.js"></script>
+	<script type="text/javascript" src="stylesheet/jeditable.charcounter.js"></script>
+	<script type="text/javascript" src="stylesheet/jtools.js"></script>
+	<script type="text/javascript" src="stylesheet/login.js"></script>
+	<script type="text/javascript" src="http://rest.kaixin001.com/api/FeatureLoader_js.php" ></script>
+	<script type="text/javascript" src="http://static.ak.fbcdn.net/connect.php/js/FB.Share" ></script>
+
+</head>
+<body>
+
+
+<div>
+<div id="home">
+	<div id="banner">
+		Banner LOGO
+	</div>
+	
+	<div id="search">
+		<form action="/search?" id="search_form" method="GET">
+			<div>
+				<input id="search_input" type="text" name="term" >
+			</div>
+		</form>
+	</div>
+	
+	<div id="result">
+		<p class="show_result_error">找不到東西...</p>
+		<p class="show_result_ok"></p>
+	</div>
+	
+	<div id="admin">
+	{% if login_status %}
+	   <span class="toggle"><a id="add_link" href="#">加新字</a></span> &nbsp; &nbsp;
+	   <div id="add_main">
+ 	     <form action="/add" id="add_form" method="POST" >
+    	 	<table>
+      		  <tbody>
+        	    <tr>
+          		  <th>新字:</th>
+          		  <td><input id="word", name="word" type="text"></td>
+                </tr>
+                <tr>
+                  <th>解釋:</th>
+                  <td><textarea id="define", name="define" rows="10" cols="50" type="text"></textarea></td>
+                </tr>       
+                <tr>
+                  <th>造句:</th>
+                  <td><textarea id="example", name="example" rows="10" cols="50" size="60" type="text"></textarea></td>
+                </tr>     
+                <tr>
+                  <th>標籤:</th>
+                  <td><input id="tag", name="tag" size="30" type="text"></td>
+                </tr> 
+              </tbody>
+            </table>
+     	  <div id="submit">
+      	   <input name="submit" value="送出新字" class="add_word" type="submit">
+    	  </div>
+    		<!-- Submit result shows up here. -->
+    		<div id="submit_result"></div>
+  		 </form>
+	   </div> <!-- add_main -->
+     <!--[CANNOT REMOVE] The class=anchorLink is for anchor moving Can't be renamed or even removed-->
+		 <a class="anchorLink" id="edit_toggle" href="#myAnchor" ref="" >修改</a> &nbsp; &nbsp;
+	   <a href="{{ url_link }}"> {{ url_text }} </a>
+	{% else %}
+		 <div class="login_auth"> 
+		    <a id="kx001_btn_login"></a>
+        <script type="text/javascript">
+          KX001.init("3237575486223f2976c9e0dbe2a023a9", "/kx001_receiver.html","用开心网登录", "录出");
+          function kx001_onlogin() { window.location.href="/"; }
+          function kx001_onlogout() { window.location.href="/"; };
+        </script>
+				<a id="sina_weibo" href="/oauth/sina_login">
+					<img src="/image/sina_weibo.png">
+				</a>
+				
+		</div>
+		 
+  {% endif %}
+  </div> <!-- admin -->
+	<br><br>
+	<div id="top10">
+		<a id="top10_link" href="/top10">Top10</a> &nbsp; &nbsp;
+		<div class="total_words">我們目前總共有 <span class="all_words">{{ total_words }}</span> 個字</div> &nbsp; &nbsp;
+	</div>
+	<div id="advert">
+	  AD
+	</div>
+</div> <!-- home -->
+
+{% if query %}
+  <div id="edit">
+  	
+		<div id="edit_main">
+  	  <a name="myAnchor" id="myAnchor"></a> <!--[CANNOT REMOVE] The target for div moving-->
+      <a id="edit_finish" href="/">返回首頁</a> &nbsp; &nbsp;
+			<ul class="thumb">
+      {% for list_query in query %}
+			 <li>
+	       <div class="edit_area" id="{{ list_query.key }}">
+		        <p> {{ list_query.Word }} </p>
+		        <div class="edit_default" type="text" id="d{{ list_query.key }}">{{ list_query.Define }}</div>
+		        <div class="edit_default" type="text" id="e{{ list_query.key }}">{{ list_query.Example }}</div>
+		        <div class="edit_default" type="text" id="t{{ list_query.key }}">{{ list_query.Tag }}</div> 	
+	       </div>  <!-- edit_area -->
+       </li>
+			{% endfor %}
+		  </ul>
+		</div> <!-- edit_main -->
+		
+		<div id="user_cloud">
+			CLOUD
+		</div>
+		
+		<div id="user_report">
+		  Report and Chart
+		</div>
+	</div> <!-- edit -->
+{% endif %}
+
+</div>
+</body>
+</html>
