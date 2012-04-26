@@ -11,12 +11,11 @@
 	<script type="text/javascript" src="stylesheet/blockUI.js"></script>
 	<script type="text/javascript" src="stylesheet/charcounter.js"></script>
 	<script type="text/javascript" src="stylesheet/edit.js"></script>
+	<script type="text/javascript" src="stylesheet/facebook_auth.js"></script>
 	<script type="text/javascript" src="stylesheet/jeditable.js"></script>
 	<script type="text/javascript" src="stylesheet/jeditable.charcounter.js"></script>
 	<script type="text/javascript" src="stylesheet/jtools.js"></script>
 	<script type="text/javascript" src="stylesheet/login.js"></script>
-	<script type="text/javascript" src="http://rest.kaixin001.com/api/FeatureLoader_js.php" ></script>
-	<script type="text/javascript" src="http://static.ak.fbcdn.net/connect.php/js/FB.Share" ></script>
 
 </head>
 <body>
@@ -77,17 +76,25 @@
 		 <a class="anchorLink" id="edit_toggle" href="#myAnchor" ref="" >修改</a> &nbsp; &nbsp;
 	   <a href="{{ url_link }}"> {{ url_text }} </a>
 	{% else %}
-		 <div class="login_auth"> 
-		    <a id="kx001_btn_login"></a>
-        <script type="text/javascript">
-          KX001.init("3237575486223f2976c9e0dbe2a023a9", "/kx001_receiver.html","用开心网登录", "录出");
-          function kx001_onlogin() { window.location.href="/"; }
-          function kx001_onlogout() { window.location.href="/"; };
-        </script>
-				<a id="sina_weibo" href="/oauth/sina_login">
-					<img src="/image/sina_weibo.png">
-				</a>
-				
+	  <div class="login_auth">
+		   <div id="fb-root"></div>  
+		       <h1>Facebook Client-side Authentication Example</h1>
+      <div id="auth-status">
+        <div id="auth-loggedout">
+          <a href="#" id="auth-loginlink">Login</a>
+        </div>
+        <div id="auth-loggedin" style="display:none">
+          Hi, <span id="auth-displayname"></span>  
+        (<a href="#" id="auth-logoutlink">logout</a>)
+      </div>
+    </div>  
+		   <!--
+		   <div class="fb-login-button" scope="email" registration-url="http://zeepooling.appspot.com/">用 Facebook登入</div> 	
+		     <span class="btn" id="fblogout" onclick="facebookLogout();" style="display: none;">登出Facebook</span>
+		   -->
+			 <a id="sina_weibo" href="/oauth/sina_login">
+			  <img src="/image/sina_weibo.png">
+			 </a>	
 		</div>
 		 
   {% endif %}

@@ -10,10 +10,8 @@ import base64
 import db_entity
 import facebookoauth as foauth
 import json_encoder
-import kaixinoauth as koauth
 import logging
 import os
-import sina_oauth
 
 from django.utils import simplejson
 from google.appengine.api import users
@@ -96,18 +94,7 @@ def UserLoginHandler(self):
     openid_username = users.get_current_user()
      
     # Check Facebook user logged in or not.
-    if not hasattr(self, "_current_user"):
-        self._current_user = None
-        user_id = foauth.parse_cookie(self.request.cookies.get("fb_user"))
-        #logging.info('I am Facebook User ID: %s' % user_id)
 
-        if user_id:
-            self._current_user = foauth.FacebookUser.get_by_key_name(user_id)
-    fuser =  self._current_user #Returns FacebookUser db entity
-    
-    # Check KaiXin user logged in or not.
-    kaixin_id =  self.request.cookies.get("kx_connect_session_key")
-    
     # Check Sina user logged in or not.
     sina_username =  self.request.cookies.get("sina_username")
         
@@ -115,16 +102,6 @@ def UserLoginHandler(self):
         logging.info('OpenID USER NAME: %s' % openid_username)
         url_link = users.create_logout_url(self.request.path)
         return {openid_username.nickname():url_link}
-    
-    elif fuser:
-        logging.info('Facebook USER NAME: %s' % fuser.name)
-        url_link = '/oauth/facebook_logout'
-        return {fuser.name:url_link}
-    
-    elif kaixin_id:
-        logging.info("I am Kaixin User %s" % kaixin_id)
-        url_link = '/oauth/kaixin_logout'
-        return {kaixin_id:url_link}
     
     elif sina_username:
         logging.info("I am Sina User %s" % sina_username)
@@ -286,13 +263,8 @@ application = webapp.WSGIApplication(
                                      [('/', MainPage),
                                       ('/add', Add),
                                       ('/edit', Edit),
-                                      ('/kx001_receiver.html', koauth.KaiXinCallback),
                                       ('/oauth/facebook_login', foauth.LoginHandler),
                                       ('/oauth/facebook_logout', foauth.LogoutHandler),
-                                      ('/oauth/kaixin_logout', koauth.LogoutHandler),
-                                      ('/oauth/sina_login', sina_oauth.SinaOauthPhaseOne),
-                                      ('/oauth_authorized', sina_oauth.SinaOauthPhaseTwo),
-                                      ('/oauth/sina_logout', sina_oauth.LogoutHandler),
                                       ('/openid', AuthHandler),
                                       ('/search', Search),
                                       ('/word/(.*)', SingleWord)],
