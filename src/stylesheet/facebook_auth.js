@@ -23,7 +23,7 @@ FB.Event.subscribe('auth.statusChange', function(response) {
     // user has auth'd your app and is logged into Facebook
     FB.api('/me', function(me){
       if (me.name) {
-	document.getElementById('auth-displayname').innerHTML = me.name;
+	    document.getElementById('auth-displayname').innerHTML = me.name;
       }
     }) // FB.api end
     document.getElementById('auth-loggedout').style.display = 'none';

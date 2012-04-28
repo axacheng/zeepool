@@ -3,19 +3,26 @@
 	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 	<link type="text/css" rel="stylesheet" href="/stylesheet/main.css" >
 	<!-- jeditable,charcount,jeitable.charcounter is functional for Edit page-->
-	<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.4.2/jquery.js"></script>
+
+	<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
 	<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.8.6/jquery-ui.min.js"></script>
   <script type="text/javascript" src="stylesheet/add.js"></script>
   <script type="text/javascript" src="stylesheet/autocom.js"></script>
 	<script type="text/javascript" src="stylesheet/anchor.js"></script>
 	<script type="text/javascript" src="stylesheet/blockUI.js"></script>
 	<script type="text/javascript" src="stylesheet/charcounter.js"></script>
-	<script type="text/javascript" src="stylesheet/edit.js"></script>
+	<script type="text/javascript" src="stylesheet/login.js"></script>
 	<script type="text/javascript" src="stylesheet/facebook_auth.js"></script>
 	<script type="text/javascript" src="stylesheet/jeditable.js"></script>
 	<script type="text/javascript" src="stylesheet/jeditable.charcounter.js"></script>
 	<script type="text/javascript" src="stylesheet/jtools.js"></script>
-	<script type="text/javascript" src="stylesheet/login.js"></script>
+	
+	
+	<!-- It seems edit.js can cause the syntax problem ! So, I temporary comment it out 20120428
+		PLEASE DO NOT LOAD edit.js priorly to any of other .js !!!
+		<script type="text/javascript" src="stylesheet/edit.js"></script> -->
+
+
 
 </head>
 <body>
@@ -26,7 +33,7 @@
 	<div id="banner">
 		Banner LOGO
 	</div>
-	
+		
 	<div id="search">
 		<form action="/search?" id="search_form" method="GET">
 			<div>
@@ -70,29 +77,27 @@
     	  </div>
     		<!-- Submit result shows up here. -->
     		<div id="submit_result"></div>
-  		 </form>
+  		 </form> <!-- form action="/add" end-->
 	   </div> <!-- add_main -->
+	   
      <!--[CANNOT REMOVE] The class=anchorLink is for anchor moving Can't be renamed or even removed-->
 		 <a class="anchorLink" id="edit_toggle" href="#myAnchor" ref="" >修改</a> &nbsp; &nbsp;
 	   <a href="{{ url_link }}"> {{ url_text }} </a>
 	{% else %}
-	  <div class="login_auth">
+    <div class="login_auth">
 		   <div id="fb-root"></div>  
-		       <h1>Facebook Client-side Authentication Example</h1>
-      <div id="auth-status">
-        <div id="auth-loggedout">
-          <a href="#" id="auth-loginlink">Login</a>
-        </div>
-        <div id="auth-loggedin" style="display:none">
-          Hi, <span id="auth-displayname"></span>  
-        (<a href="#" id="auth-logoutlink">logout</a>)
-      </div>
-    </div>  
-		   <!--
-		   <div class="fb-login-button" scope="email" registration-url="http://zeepooling.appspot.com/">用 Facebook登入</div> 	
-		     <span class="btn" id="fblogout" onclick="facebookLogout();" style="display: none;">登出Facebook</span>
-		   -->
-			 <a id="sina_weibo" href="/oauth/sina_login">
+       <div id="auth-status">
+         <div id="auth-loggedout">
+           <a href="#" id="auth-loginlink">Login</a>
+         </div>
+         <div id="auth-loggedin" style="display:none">
+           Hi, <span id="auth-displayname"></span>  
+           (<a href="#" id="auth-logoutlink">logout</a>)
+         </div>
+       </div> <!-- auth-status end -->
+    </div> <!-- login_auth end -->
+    
+		<a id="sina_weibo" href="/oauth/sina_login">
 			  <img src="/image/sina_weibo.png">
 			 </a>	
 		</div>

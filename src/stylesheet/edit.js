@@ -1,5 +1,5 @@
 $(document).ready(function(){
-  //Hove effect when mouseover on 修改
+  //Hove effect when mouseover on ‰øÆÊîπ
 	$('.anchorLink').hover(
 	   function(e){
 		   $('#edit').css("display", "block"); //show up #edit div when mouse cover
@@ -10,7 +10,7 @@ $(document).ready(function(){
 	);
 	
 	// Unbind hover,mouserenter,mouseleave.
-	// Otherwise,User can't move away mouse from .anchorLink(aka:修改的link)
+	// Otherwise,User can't move away mouse from .anchorLink(aka:‰øÆÊîπÁöÑlink)
 	$('.anchorLink').click(function(){
 	  $(".anchorLink").unbind("hover").unbind('mouseenter').unbind('mouseleave');
 	}); //http://api.jquery.com/hover/ see discussion from Zlatev replied to Thomas Svensson 

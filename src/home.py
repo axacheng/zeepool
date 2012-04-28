@@ -46,14 +46,15 @@ def basicAuth(func):
 
 
 class AuthHandler(webapp.RequestHandler):
-    """ Compile OpenID/Federated User and Facebook user authentication links.
+    """ Compile OpenID/Federated User and Oauth user authentication links.
     
-    Read auth_constants.py then process OpenID login_url to federated_identity
-    method to generate URLs. Using dict update() to merge openid_provider_link
-    with OauthProviders.The return will be executed by WSGI /openid handler when
-    index.html login.js being executed.
+    Read in auth_constants.py, then process OpenIdProviders and OauthProviders
+    their federated_identity or direct Oauth link and generate login URLs.
+    Here, I use dict update() to merge those two providers links.
     
-    Return:  dict: JSON object
+    Return:  dict: JSON object.
+        The return will be executed by WSGI /auth_handler when index.html
+        login.js being executed.
     """
     def get(self):
         for openid_provider, openid_data in auth_constants.OpenIdProviders.items():
@@ -97,6 +98,7 @@ def UserLoginHandler(self):
 
     # Check Sina user logged in or not.
     sina_username =  self.request.cookies.get("sina_username")
+    facebook_user = self.request.get('auth-displayname')  # (TODO)
         
     if openid_username:
         logging.info('OpenID USER NAME: %s' % openid_username)
@@ -108,19 +110,39 @@ def UserLoginHandler(self):
         url_link = '/oauth/sina_logout'
         return {sina_username:url_link}
     
+    elif facebook_user:
+        pass
+    
     else:
-        logging.info('None USER NAME')
+        logging.info('We cant find username, and would generate  USER NAME')
         return {}
         
 
 class MainPage(webapp.RequestHandler):
     """ Represent the MainPage - index.html
     
-    First of all, check OpenID or Oauth user login status. OpendID user can be
-    verified by user GAE build-in function - get_current_user().It's simple!
-    For Oauth user such as Facebook, we use facebookoauth.py API then read 
-    browser cookie data. self_current_user returns FacebookUser db entity if 
-    user is logged in, vice versa return None type.
+    First of all, we check OpenID or Oauth user login status by fetching their
+    'username' and handled by UserLoginHandler() class.
+    When 'username' is False which means user hasn't been login yet, in this
+    case we would insert multiple <span> html tags as login_url links and
+    account provider's logo (e.g. google, yahoo or facebook icon) to
+    index.html <div class=login_auth>. You can check login.js to get more detail
+    information.
+    
+    MainPage-->UserLoginHandler (no username) --> 
+                 1. Activate <div class='login_auth'>
+                 2. login.js calls /auth_handler (aka: AuthHandler())
+                 3. AuthHandler() generates login_urls and image link for login.js
+                 4. login.js jQuery appends method to generate <span> tag
+    MainPage-->UserLoginHandler (has username) --> 
+                 1. construct url_link(logout), url_text, login_status, query
+                 2. Render to index.html
+                 
+    * For OpendID user, their login_status can be verified by user GAE build-in
+    function - get_current_user().It's simple!
+    * For Oauth user such as Facebook, we can get their /me.name (provided from
+    FB.api return) by using GAE WSGI self.request.get() method on index.html.
+    
     
     Return: WSGIApplication with html object
     """
@@ -136,20 +158,23 @@ class MainPage(webapp.RequestHandler):
             query = db_entity.Words.all().filter('Creator =', username)
         else:
             logging.info('NO CURRENT USER.......')
-            #url_link = users.create_login_url(self.request.path)
             url_link = users.create_login_url(self.request.path)
             url_text = '先登入才能增加新字'
             login_status = None
             query = None
-        # Session for count amount of Words.
+            
+        # Session for count amount of Words. Even username is None, we're going
+        # to render our amount of Words to everyone.
         all_words_count = db_entity.Words.all()
-        total_words = all_words_count.count()                                     
-        # Compile all the 'key' to template_dict
+        total_words = all_words_count.count()       
+                                      
+        # Compile all the 'key' to template_dict and pass them to index.html
         template_dict = {'url_link':url_link, 'url_text':url_text,
                          'login_status':login_status,
                          'total_words':total_words,
                          'query':query,}
-        
+        import sys
+        print >> sys.stderr, template_dict
         path = os.path.join(os.path.dirname(__file__), 'index.html')
         self.response.out.write(template.render(path, template_dict))
     
@@ -265,7 +290,7 @@ application = webapp.WSGIApplication(
                                       ('/edit', Edit),
                                       ('/oauth/facebook_login', foauth.LoginHandler),
                                       ('/oauth/facebook_logout', foauth.LogoutHandler),
-                                      ('/openid', AuthHandler),
+                                      ('/auth_handler', AuthHandler),
                                       ('/search', Search),
                                       ('/word/(.*)', SingleWord)],
                                      debug=True)
