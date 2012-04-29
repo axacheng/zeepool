@@ -49,7 +49,7 @@ $(function(){
           contentType: "application/json; charset=utf-8", 
         success: function(server_return){
         // If server is no result back to client then show error mesg.
-          if (server_return.length == 0){
+          	th == 0){
             $('.show_result_ok').hide()
             $('.show_result_error').fadeIn().delay(2000).fadeOut()
             return false

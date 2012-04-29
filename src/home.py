@@ -12,6 +12,7 @@ import facebookoauth as foauth
 import json_encoder
 import logging
 import os
+import weibo
 
 from django.utils import simplejson
 from google.appengine.api import users
@@ -291,15 +292,15 @@ class Edit(webapp.RequestHandler):
         query.put()
 
 
-class SingleWord(webapp.RequestHandler):
-    def get(self, key):
-        query = db_entity.Words.get(key)
-        self.response.headers['Content-Type'] = "application/json"
-        self.response.out.write(query)
-        #result = query.Word
-        #self.response.out.write(result)
-        
-        
+class SearchSingleWord(webapp.RequestHandler):
+    def get(self):
+      query = db_entity.Words.get('agp6ZWVwb29saW5ncg0LEgVXb3Jkcxjp_gIM')
+      json_result = json_encoder.GqlEncoder().encode(query.Define)
+      self.response.headers['Content-Type'] = "application/json"
+      self.response.out.write(json_result)
+      
+      
+
 application = webapp.WSGIApplication(
                                      [('/', MainPage),
                                       ('/add', Add),
@@ -308,7 +309,7 @@ application = webapp.WSGIApplication(
                                       ('/oauth/facebook_logout', foauth.LogoutHandler),
                                       ('/auth_handler', AuthHandler),
                                       ('/search', Search),
-                                      ('/word/(.*)', SingleWord)],
+                                      ('/search_single_word', SearchSingleWord)],
                                      debug=True)
 
 def main():
