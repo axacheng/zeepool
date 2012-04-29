@@ -72,20 +72,34 @@ class AuthHandler(webapp.RequestHandler):
         
 
 def UserLoginHandler(self):
-    """ This method can be called by MainPage get() method.
+    """ This method offers username and logout_link to MainPage().
     
-    Two kinds of account support: OpenID and Oauth.
+    MainPage() would see if current uesr is logged in, or needed to log in.
+    If current user shows 'no logged in', then we would provide login links to
+    them which handled by AuthHandler().
+    If current user is logged in, then here we provide logout link, and it'd
+    being a result to template_dict['url_link']
+    
+    Two kind of account authorizations support: OpenID and Oauth2.0.
     * OpenID
       1. GAE has built-in federated support. Yahoo and Google use it.
       
-    * Oauth
-      1. Facebook user: 
+    * Oauth2.0
+      1. Facebook user: We use unofficial facebook python API - facebookoauth.py
+         and changed it a bit for customization. 
+         http://github.com/pythonforfacebook/facebook-sdk (version 0.3.0)
+         
+         This API sets cookie(fb_user) to browser, and we use
+         foauth.parse_cookie function to get it back from user's browser
+         resource to identify your profile info (e.g. access_token or login 
+         status)
+      
       2. Sina weibo user: Similar as facebook API but I use standard oauth 1.0
                      protocol to get access_token then use it token with weibo
                      weibopy.api API to get username. I use 'sina_username'
                      cookie to control user login/logout status.
                      
-    Return: dict: logged in username:logout URL link
+    Return: dict: {logged in username:logout URL link}
     """
     # Check OpenID/Federated user logged in or not.
     openid_username = users.get_current_user()
@@ -94,7 +108,6 @@ def UserLoginHandler(self):
     if not hasattr(self, "_current_user"):
         self._current_user = None
         user_id = foauth.parse_cookie(self.request.cookies.get("fb_user"))
-        #logging.info('I am Facebook User ID: %s' % user_id)
 
         if user_id:
             self._current_user = foauth.FacebookUser.get_by_key_name(user_id)
@@ -111,7 +124,7 @@ def UserLoginHandler(self):
         return {facebook_user.name:logout_link}
     
     else:
-        logging.info('We cant find username, and would generate  USER NAME')
+        logging.info('We cant find username, redirect to login section')
         return {}
         
 
