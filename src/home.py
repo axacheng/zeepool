@@ -75,16 +75,12 @@ def UserLoginHandler(self):
     """ This method can be called by MainPage get() method.
     
     Two kinds of account support: OpenID and Oauth.
-    
-    GAE has built-in federated support. Yahoo and Google use it.
-    Facebook user:I use official facebook API - facebookoauth with oauth method.
-                  which use cookie named 'fb_user' to determine user is logged
-                  or not.
-    KaiXin user: KaiXin provides its own javascript API for oauth. I include 
-                 FeatureLoader_js.php on index.html header. Same as facebook,
-                 it uses cookie named 'kx_connection_session_key' to control
-                 user login/logout status.
-    Sina weibo user: Similar as facebook API but I use standard oauth 1.0
+    * OpenID
+      1. GAE has built-in federated support. Yahoo and Google use it.
+      
+    * Oauth
+      1. Facebook user: 
+      2. Sina weibo user: Similar as facebook API but I use standard oauth 1.0
                      protocol to get access_token then use it token with weibo
                      weibopy.api API to get username. I use 'sina_username'
                      cookie to control user login/logout status.
@@ -95,23 +91,24 @@ def UserLoginHandler(self):
     openid_username = users.get_current_user()
      
     # Check Facebook user logged in or not.
+    if not hasattr(self, "_current_user"):
+        self._current_user = None
+        user_id = foauth.parse_cookie(self.request.cookies.get("fb_user"))
+        #logging.info('I am Facebook User ID: %s' % user_id)
 
-    # Check Sina user logged in or not.
-    sina_username =  self.request.cookies.get("sina_username")
-    facebook_user = self.request.get('auth-displayname')  # (TODO)
-        
+        if user_id:
+            self._current_user = foauth.FacebookUser.get_by_key_name(user_id)
+    facebook_user =  self._current_user #Returns FacebookUser db entity
+
     if openid_username:
         logging.info('OpenID USER NAME: %s' % openid_username)
-        url_link = users.create_logout_url(self.request.path)
-        return {openid_username.nickname():url_link}
-    
-    elif sina_username:
-        logging.info("I am Sina User %s" % sina_username)
-        url_link = '/oauth/sina_logout'
-        return {sina_username:url_link}
-    
+        logout_link = users.create_logout_url(self.request.path)
+        return {openid_username.nickname():logout_link}
+
     elif facebook_user:
-        pass
+        logging.info("I am Facebook User %s" % facebook_user)
+        logout_link = '/oauth/facebook_logout'
+        return {facebook_user.name:logout_link}
     
     else:
         logging.info('We cant find username, and would generate  USER NAME')
@@ -122,7 +119,7 @@ class MainPage(webapp.RequestHandler):
     """ Represent the MainPage - index.html
     
     First of all, we check OpenID or Oauth user login status by fetching their
-    'username' and handled by UserLoginHandler() class.
+    'username' which handled by UserLoginHandler() class.
     When 'username' is False which means user hasn't been login yet, in this
     case we would insert multiple <span> html tags as login_url links and
     account provider's logo (e.g. google, yahoo or facebook icon) to
@@ -131,12 +128,16 @@ class MainPage(webapp.RequestHandler):
     
     MainPage-->UserLoginHandler (no username) --> 
                  1. Activate <div class='login_auth'>
-                 2. login.js calls /auth_handler (aka: AuthHandler())
-                 3. AuthHandler() generates login_urls and image link for login.js
-                 4. login.js jQuery appends method to generate <span> tag
-    MainPage-->UserLoginHandler (has username) --> 
-                 1. construct url_link(logout), url_text, login_status, query
-                 2. Render to index.html
+                 2. login.js calls /auth_handler (aka: AuthHandler()), and
+                    return(aka: login_link) would be appended by jQuery to 
+                    generate <span> tag for login links.
+                 3. AuthHandler() generates login_urls and image link for
+                    OauthProviders user, and for OpenIdProviders user we use
+                    users.create_login_url method to generate url_link.
+    MainPage-->UserLoginHandler (has username) -->
+                 1. Activate <div id="add_main"> and skip <div class='login_auth>
+                 2. Construct logout_link, url_text, login_status, query
+                 3. Render to index.html
                  
     * For OpendID user, their login_status can be verified by user GAE build-in
     function - get_current_user().It's simple!
@@ -157,7 +158,7 @@ class MainPage(webapp.RequestHandler):
             login_status = True
             query = db_entity.Words.all().filter('Creator =', username)
         else:
-            logging.info('NO CURRENT USER.......')
+            logging.info('No login username be found.')
             url_link = users.create_login_url(self.request.path)
             url_text = '先登入才能增加新字'
             login_status = None
@@ -169,12 +170,14 @@ class MainPage(webapp.RequestHandler):
         total_words = all_words_count.count()       
                                       
         # Compile all the 'key' to template_dict and pass them to index.html
+        # This url_link could be logout_link or login_link depends on whether
+        # username exist or not. If it's exist then url_link is logout_link,
+        # vice versa. 
         template_dict = {'url_link':url_link, 'url_text':url_text,
                          'login_status':login_status,
                          'total_words':total_words,
                          'query':query,}
-        import sys
-        print >> sys.stderr, template_dict
+        
         path = os.path.join(os.path.dirname(__file__), 'index.html')
         self.response.out.write(template.render(path, template_dict))
     

@@ -25,6 +25,9 @@ FB.Event.subscribe('auth.statusChange', function(response) {
       if (me.name) {
 	    document.getElementById('auth-displayname').innerHTML = me.name;
       }
+      if (me.id) {
+  	    document.getElementById('auth-displayname').innerHTML = me.id;
+        }
     }) // FB.api end
     document.getElementById('auth-loggedout').style.display = 'none';
     document.getElementById('auth-loggedin').style.display = 'block';

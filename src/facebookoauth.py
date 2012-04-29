@@ -25,10 +25,16 @@ See the "appengine" directory for an example using the JavaScript SDK.
 Using JavaScript is recommended if it is feasible for your application,
 as it handles some complex authentication states that can only be detected
 in client-side code.
+
+This code is original wrote by martey.
+I changed it a bit for customization.
+http://github.com/pythonforfacebook/facebook-sdk
+http://pypi.python.org/pypi/facebook-sdk/0.3.0
+
 """
 
-FACEBOOK_APP_ID = "117623761632031"
-FACEBOOK_APP_SECRET = "5570aa4b96c37a86f3e9dedba0766f73"
+FACEBOOK_APP_ID = "105371172923690"
+FACEBOOK_APP_SECRET = "c462ab60f3fdabc56284396167a090f7"
 
 import base64
 import cgi
@@ -46,13 +52,13 @@ from django.utils import simplejson as json
 from google.appengine.ext import db
 from google.appengine.ext import webapp
 from google.appengine.ext.webapp import util
-from google.appengine.ext.webapp.util import run_wsgi_app
 from google.appengine.ext.webapp import template
 
 
 class FacebookUser(db.Model):
     id = db.StringProperty(required=True)
     created = db.DateTimeProperty(auto_now_add=True)
+    email_address = db.EmailProperty(required=True)
     updated = db.DateTimeProperty(auto_now=True)
     name = db.StringProperty(required=True)
     profile_url = db.StringProperty(required=True)
@@ -81,7 +87,8 @@ class HomeHandler(BaseHandler):
 class LoginHandler(BaseHandler):
     def get(self):
         verification_code = self.request.get("code")
-        args = dict(client_id=FACEBOOK_APP_ID, redirect_uri=self.request.path_url)
+        args = dict(client_id=FACEBOOK_APP_ID,
+                    redirect_uri=self.request.path_url)
         if self.request.get("code"):
             args["client_secret"] = FACEBOOK_APP_SECRET
             args["code"] = self.request.get("code")
@@ -92,12 +99,18 @@ class LoginHandler(BaseHandler):
 
             # Download the user profile and cache a local instance of the
             # basic profile info
+            #
+            # (Added by Axa)
+            # We can get profile information from 
+            # https://developers.facebook.com/tools/explorer?method=GET&path=me
             profile = json.load(urllib.urlopen(
                 "https://graph.facebook.com/me?" +
                 urllib.urlencode(dict(access_token=access_token))))
-            user = FacebookUser(key_name=str(profile["id"]), id=str(profile["id"]),
-                        name=profile["name"], access_token=access_token,
-                        profile_url=profile["link"])
+            user = FacebookUser(
+                       key_name=str(profile["id"]), id=str(profile["id"]),
+                       name=profile["name"], access_token=access_token,
+                       email_address=profile["email"], # Axa added
+                       profile_url=profile["link"])
             user.put()
             set_cookie(self.response, "fb_user", str(profile["id"]),
                        expires=time.time() + 30 * 86400)
@@ -122,7 +135,8 @@ def set_cookie(response, name, value, domain=None, path="/", expires=None):
     cookie = Cookie.BaseCookie()
     cookie[name] = "|".join([value, timestamp, signature])
     cookie[name]["path"] = path
-    if domain: cookie[name]["domain"] = domain
+    if domain:
+        cookie[name]["domain"] = domain
     if expires:
         cookie[name]["expires"] = email.utils.formatdate(
             expires, localtime=False, usegmt=True)
@@ -131,9 +145,11 @@ def set_cookie(response, name, value, domain=None, path="/", expires=None):
 
 def parse_cookie(value):
     """Parses and verifies a cookie value from set_cookie"""
-    if not value: return None
+    if not value:
+        return None
     parts = value.split("|")
-    if len(parts) != 3: return None
+    if len(parts) != 3:
+        return None
     if cookie_signature(parts[0], parts[1]) != parts[2]:
         logging.warning("Invalid cookie signature %r", value)
         return None
@@ -154,17 +170,6 @@ def cookie_signature(*parts):
     people using this example don't accidentally all use the same secret).
     """
     hash = hmac.new(FACEBOOK_APP_SECRET, digestmod=hashlib.sha1)
-    for part in parts: hash.update(part)
+    for part in parts:
+        hash.update(part)
     return hash.hexdigest()
-
-
-def main():
-    run_wsgi_app(webapp.WSGIApplication([
-        (r"/", HomeHandler),
-        (r"/auth/login", LoginHandler),
-        (r"/auth/logout", LogoutHandler),
-    ]))
-
-
-if __name__ == "__main__":
-    main()

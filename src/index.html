@@ -12,7 +12,6 @@
 	<script type="text/javascript" src="stylesheet/blockUI.js"></script>
 	<script type="text/javascript" src="stylesheet/charcounter.js"></script>
 	<script type="text/javascript" src="stylesheet/login.js"></script>
-	<script type="text/javascript" src="stylesheet/facebook_auth.js"></script>
 	<script type="text/javascript" src="stylesheet/jeditable.js"></script>
 	<script type="text/javascript" src="stylesheet/jeditable.charcounter.js"></script>
 	<script type="text/javascript" src="stylesheet/jtools.js"></script>
@@ -84,18 +83,7 @@
 		 <a class="anchorLink" id="edit_toggle" href="#myAnchor" ref="" >修改</a> &nbsp; &nbsp;
 	   <a href="{{ url_link }}"> {{ url_text }} </a>
 	{% else %}
-    <div class="login_auth">
-		   <div id="fb-root"></div>  
-       <div id="auth-status">
-         <div id="auth-loggedout">
-           <a href="#" id="auth-loginlink">Login</a>
-         </div>
-         <div id="auth-loggedin" style="display:none">
-           Hi, <span id="auth-displayname"></span>  
-           (<a href="#" id="auth-logoutlink">logout</a>)
-         </div>
-       </div> <!-- auth-status end -->
-    </div> <!-- login_auth end -->
+    <div class="login_auth"></div> <!-- login_auth end -->
     
 		<a id="sina_weibo" href="/oauth/sina_login">
 			  <img src="/image/sina_weibo.png">

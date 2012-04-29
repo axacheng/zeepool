@@ -8,17 +8,10 @@ OpenIdProviders = {
         'image': '/image/yahooW.png',
     },
 }
-                         
+
 OauthProviders = {
     'Facebook': {
         'url': 'http://zeepooling.appspot.com/oauth/facebook_login',
         'image': '/image/facebookW.png'
     },
-    #'TuDou': {
-    #    'url': None,
-    #    'image': '/image/flickrW.png'
-    #},
-}    
-
-
-
+}
