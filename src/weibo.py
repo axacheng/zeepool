@@ -171,11 +171,12 @@ class APIClient(object):
         redirect = redirect_uri if redirect_uri else self.redirect_uri
         if not redirect:
             raise APIError('21305', 'Parameter absent: redirect_uri', 'OAuth2 request')
-        return '%s%s?%s' % (self.auth_url, 'authorize', \
-                _encode_params(client_id = self.client_id, \
-                        response_type = 'code', \
-                        display = display, \
-                        redirect_uri = redirect))
+        return '%s%s?%s' % (self.auth_url,
+                            'authorize',
+                            _encode_params(client_id = self.client_id,
+                                           response_type = 'code',
+                                           display = display,
+                                           redirect_uri = redirect))
 
     def request_access_token(self, code, redirect_uri=None):
         '''
