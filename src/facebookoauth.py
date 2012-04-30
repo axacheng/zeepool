@@ -14,7 +14,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-"""A barebones AppEngine application that uses Facebook for login.
+"""A barebones AppEngine application that uses Facebook OAuth2.0 for login.
 
 This application uses OAuth 2.0 directly rather than relying on Facebook's
 JavaScript SDK for login. It also accesses the Facebook Graph API directly
