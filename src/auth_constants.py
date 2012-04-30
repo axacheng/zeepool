@@ -14,4 +14,8 @@ OauthProviders = {
         'url': 'http://zeepooling.appspot.com/oauth/facebook_login',
         'image': '/image/facebookW.png'
     },
+    'Weibo': {
+        'url': 'http://zeepooling.appspot.com/oauth/weibo_login',
+        'image': '/image/weibo_login.png'
+    },                  
 }

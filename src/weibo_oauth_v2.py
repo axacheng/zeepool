@@ -42,7 +42,7 @@ WEIBO_APP_SECRET='ec756023d85cd93846a7fe52d7b6d784'
 # This CALLBACK_URL must be the same as :
 # http://open.weibo.com/apps/1496964127/info/advanced
 # 裡面的 "应用回调页" Otherwise, you would get 'error:redirect_uri_mismatch'
-CALLBACK_URL='http://zeepooling.appspot.com/weibo_login'  
+CALLBACK_URL='http://zeepooling.appspot.com/oauth/weibo_login'  
         
         
 class WeiboUser(db.Model):
@@ -109,7 +109,7 @@ class LoginHandler(webapp.RequestHandler):
           weibo_user_profile = client.get.users__show(uid=weibo_uid.uid)
     
           # Compile profile info as we wanted, and store to WeiboUser entity.
-          weibo_id = weibo_user_profile.id
+          weibo_id = str(weibo_user_profile.id)
           weibo_profile_url = weibo_user_profile.profile_url
           weibo_profile_image_url = weibo_user_profile.profile_image_url
           weibo_screen_name = weibo_user_profile.screen_name
@@ -120,7 +120,7 @@ class LoginHandler(webapp.RequestHandler):
                      profile_image_url=weibo_profile_image_url,
                      screen_name=weibo_screen_name)
           user.put()
-          set_cookie(self.response, "weibo_user", str(profile["id"]),
+          set_cookie(self.response, "weibo_user", weibo_id,
                      expires=time.time() + 30 * 86400)
           self.redirect("/")
         else:
@@ -169,7 +169,7 @@ def cookie_signature(*parts):
     We use the Weibo app secret since it is different for every app (so
     people using this example don't accidentally all use the same secret).
     """
-    hash = hmac.new(APP_SECRET, digestmod=hashlib.sha1)
+    hash = hmac.new(WEIBO_APP_SECRET, digestmod=hashlib.sha1)
     for part in parts:
         hash.update(part)
     return hash.hexdigest()

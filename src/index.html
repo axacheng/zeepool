@@ -15,14 +15,10 @@
 	<script type="text/javascript" src="stylesheet/jeditable.js"></script>
 	<script type="text/javascript" src="stylesheet/jeditable.charcounter.js"></script>
 	<script type="text/javascript" src="stylesheet/jtools.js"></script>
-	
-	
+
 	<!-- It seems edit.js can cause the syntax problem ! So, I temporary comment it out 20120428
 		PLEASE DO NOT LOAD edit.js priorly to any of other .js !!!
 		<script type="text/javascript" src="stylesheet/edit.js"></script> -->
-
-
-
 </head>
 <body>
 
@@ -83,11 +79,7 @@
 		 <a class="anchorLink" id="edit_toggle" href="#myAnchor" ref="" >修改</a> &nbsp; &nbsp;
 	   <a href="{{ url_link }}"> {{ url_text }} </a>
 	{% else %}
-    <div class="login_auth"></div> <!-- login_auth end -->
-    
-		<a id="sina_weibo" href="/oauth/sina_login">
-			  <img src="/image/sina_weibo.png">
-			 </a>	
+    <div class="login_auth"></div>
 		</div>
 		 
   {% endif %}
