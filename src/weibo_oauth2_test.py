@@ -1,6 +1,8 @@
+# -*- coding: utf-8 -*-
+
 #!/usr/bin/env python
 #
-# Copyright 2010 Facebook
+# Copyright 2012
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
 # not use this file except in compliance with the License. You may obtain
@@ -14,153 +16,81 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-"""A barebones AppEngine application that uses Facebook for login.
+""" This code is changed by Axa for WeiBo Oauth2.0 testing.
 
-This application uses OAuth 2.0 directly rather than relying on Facebook's
-JavaScript SDK for login. It also accesses the Facebook Graph API directly
-rather than using the Python SDK. It is designed to illustrate how easy
-it is to use the Facebook Platform without any third party code.
+Original author is https://github.com/martey
+http://github.com/pythonforfacebook/facebook-sdk
+http://pypi.python.org/pypi/facebook-sdk/0.3.0
 
-See the "appengine" directory for an example using the JavaScript SDK.
-Using JavaScript is recommended if it is feasible for your application,
-as it handles some complex authentication states that can only be detected
-in client-side code.
+Please make sure you have oauth2.0.html and app.yaml these files for test run.
+oauth2.0.html is web page for this testing code.
+app.yaml is GAE config file.
+
+*****************
+* oauth2.0.html *
+*****************
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+    <title>WeiBo OAuth2.0 login testing</title>
+  </head>
+  
+  <body>
+    <p> WeiBo login </p>
+    <p><a href="/weibo_login">Log in with WeiBooooooo</a></p>
+    <pre>
+    WeiBo python SDK:廖雪峰
+    http://code.google.com/p/sinaweibopy/source/browse/src/weibo.py
+    
+    My testing code:
+    https://code.google.com/p/zeepool/source/browse/src/weibo_oauth2_test.py
+    
+    My testing page:
+    http://axa.appspot.com/
+    
+    Testing result here:
+    http://www.weibo.com/u/1861651780
+    </pre>
+  </body>
+</html>
+
+
+************
+* app.yaml *
+************
+application: axa
+version: 3
+runtime: python
+api_version: 1
+
+handlers:
+- url: /.*
+  script: weibo_oauth2_test.py
+
 """
 
-FACEBOOK_APP_ID = "105371172923690"
-FACEBOOK_APP_SECRET = "c462ab60f3fdabc56284396167a090f7"
-
-import base64
-import cgi
-import Cookie
-import email.utils
-import hashlib
-import hmac
 import logging
 import os.path
-import time
-import urllib
-import wsgiref.handlers
 from weibo import APIClient
 
-from django.utils import simplejson as json
-from google.appengine.ext import db
 from google.appengine.ext import webapp
 from google.appengine.ext.webapp import util
 from google.appengine.ext.webapp import template
 
 
-class User(db.Model):
-    id = db.StringProperty(required=True)
-    created = db.DateTimeProperty(auto_now_add=True)
-    updated = db.DateTimeProperty(auto_now=True)
-    name = db.StringProperty(required=True)
-    profile_url = db.StringProperty(required=True)
-    access_token = db.StringProperty(required=True)
-
-
-class BaseHandler(webapp.RequestHandler):
-    @property
-    def current_user(self):
-        """Returns the logged in Facebook user, or None if unconnected."""
-        if not hasattr(self, "_current_user"):
-            self._current_user = None
-            user_id = parse_cookie(self.request.cookies.get("fb_user"))
-            if user_id:
-                self._current_user = User.get_by_key_name(user_id)
-        return self._current_user
-
-
-
-
-
-class LoginHandler(BaseHandler):
-    def get(self):
-        verification_code = self.request.get("code")
-        args = dict(client_id=FACEBOOK_APP_ID,
-                    redirect_uri=self.request.path_url)
-        if self.request.get("code"):
-            logging.info('has code....')
-            args["client_secret"] = FACEBOOK_APP_SECRET
-            args["code"] = self.request.get("code")
-            response = cgi.parse_qs(urllib.urlopen(
-                "https://graph.facebook.com/oauth/access_token?" +
-                urllib.urlencode(args)).read())
-            access_token = response["access_token"][-1]
-
-            # Download the user profile and cache a local instance of the
-            # basic profile info
-            profile = json.load(urllib.urlopen(
-                "https://graph.facebook.com/me?" +
-                urllib.urlencode(dict(access_token=access_token))))
-            user = User(key_name=str(profile["id"]), id=str(profile["id"]),
-                        name=profile["name"], access_token=access_token,
-                        profile_url=profile["link"])
-            user.put()
-            set_cookie(self.response, "fb_user", str(profile["id"]),
-                       expires=time.time() + 30 * 86400)
-            self.redirect("/")
-        else:
-            logging.info('arggggggggggg %s' % args)
-            self.redirect(
-                "https://graph.facebook.com/oauth/authorize?" +
-                urllib.urlencode(args))
-
-
-class LogoutHandler(BaseHandler):
-    def get(self):
-        set_cookie(self.response, "fb_user", "", expires=time.time() - 86400)
-        self.redirect("/")
-
-
-def set_cookie(response, name, value, domain=None, path="/", expires=None):
-    """Generates and signs a cookie for the give name/value"""
-    timestamp = str(int(time.time()))
-    value = base64.b64encode(value)
-    signature = cookie_signature(value, timestamp)
-    cookie = Cookie.BaseCookie()
-    cookie[name] = "|".join([value, timestamp, signature])
-    cookie[name]["path"] = path
-    if domain:
-        cookie[name]["domain"] = domain
-    if expires:
-        cookie[name]["expires"] = email.utils.formatdate(
-            expires, localtime=False, usegmt=True)
-    response.headers._headers.append(("Set-Cookie", cookie.output()[12:]))
-
-
-def parse_cookie(value):
-    """Parses and verifies a cookie value from set_cookie"""
-    if not value:
-        return None
-    parts = value.split("|")
-    if len(parts) != 3:
-        return None
-    if cookie_signature(parts[0], parts[1]) != parts[2]:
-        logging.warning("Invalid cookie signature %r", value)
-        return None
-    timestamp = int(parts[1])
-    if timestamp < time.time() - 30 * 86400:
-        logging.warning("Expired cookie %r", value)
-        return None
-    try:
-        return base64.b64decode(parts[0]).strip()
-    except:
-        return None
-
-
-def cookie_signature(*parts):
-    """Generates a cookie signature.
-
-    We use the Facebook app secret since it is different for every app (so
-    people using this example don't accidentally all use the same secret).
-    """
-    hash = hmac.new(FACEBOOK_APP_SECRET, digestmod=hashlib.sha1)
-    for part in parts:
-        hash.update(part)
-    return hash.hexdigest()
-
 class WeiBoLogin(webapp.RequestHandler):
+      """ WeiBo APIClient login testing.
+      
+      When user first time to get in our site, they should request 'code'
+      by using url=client.get_authorize_url() to compile URL e.g.:
+      https://api.weibo.com/oauth2/authorize?redirect_uri=http%3A//axa.
+      appspot.com&response_type=code&client_id=1496964127&display=default 
+      Then, we use self.redirect() method to call that url, afterward we
+      should be able to see/fetch 'code' from:
+      http://axa.appspot.com/weibo_login?code=xxyyyzzz111222333
+      then we can use this code to request access_token to access user's resource.
+      """
       def get(self):
         APP_KEY='1496964127'
         APP_SECRET='ec756023d85cd93846a7fe52d7b6d784'
@@ -169,42 +99,45 @@ class WeiBoLogin(webapp.RequestHandler):
         # http://open.weibo.com/apps/1496964127/info/advanced
         # 裡面的 "应用回调页" Otherwise, you would get 'error:redirect_uri_mismatch'
         CALLBACK_URL='http://axa.appspot.com/weibo_login'  
-
-
-        client = APIClient(app_key=APP_KEY, app_secret=APP_SECRET, redirect_uri=CALLBACK_URL)
-        url = client.get_authorize_url()
         
+        # (NOTE) PLEASE CHANGE POST_MY_MESSAGE text BEFORE RUN THIS CODE!!!
+        # WeiBo would treat you as spam (duplicate is not allowed!) so you would
+        # get Server 500 error (aka: 400 Bad Gateway on weibo end).
+        POST_MY_MESSAGE = 'haha, 這是我最後的測試'
+
+
+        client = APIClient(app_key=APP_KEY, app_secret=APP_SECRET,
+                           redirect_uri=CALLBACK_URL)
+        # Compile authorize url for getting 'code'
+        url = client.get_authorize_url()  
+                            
+        # Get authorization 'code' from url return for further access_token.          
         verification_code = self.request.get("code")
-        logging.info('my code %s' % verification_code)
+        logging.info('Weibo authorization code %s' % verification_code)
+        
         if self.request.get("code"):
           code = self.request.get("code")
-          logging.info('CODE %s' % code)
+          logging.info('code is %s' % code)
 
+          # Setup access_token for further user resource accessing.
           r = client.request_access_token(code)
           access_token = r.access_token
           expires_in = r.expires_in
           client.set_access_token(access_token, expires_in)
-          result1 = client.get.statuses__user_timeline()
-          result2 = client.post.statuses__update(status='SO GOOD')
-          self.response.out.write(result1)
+          
+          # Access user's resource.
+          testing1 = client.get.statuses__user_timeline()
+          testing2 = client.post.statuses__update(status=POST_MY_MESSAGE)
+          self.response.out.write(testing2)
         else:
-          # When user first time to get in our site, they should request 'code'
-          # by using url=client.get_authorize_url() to compile URL e.g.:
-          # https://api.weibo.com/oauth2/authorize?redirect_uri=http%3A//axa.
-          # appspot.com&response_type=code&client_id=1496964127&display=default 
-          # Then, we use self.redirect() method to call that url, afterward we
-          # should be able to see/fetch 'code' from:
-          # http://axa.appspot.com/weibo_login?code=xxyyyzzz111222333
-          # then we can use this code to request access_token to access user's 
-          # resource.
           logging.info('no code can be found....')
           self.redirect(url)
         
       
-class HomeHandler(BaseHandler):
+class HomeHandler(webapp.RequestHandler):
     def get(self):
       args = ''
-      path = os.path.join(os.path.dirname(__file__), "oauth.html")
+      path = os.path.join(os.path.dirname(__file__), "oauth2.0.html")
       self.response.out.write(template.render(path, args))
 
 
@@ -212,8 +145,6 @@ def main():
     util.run_wsgi_app(webapp.WSGIApplication([
         (r"/", HomeHandler),
         (r"/weibo_login", WeiBoLogin),
-        (r"/auth/login", LoginHandler),
-        (r"/auth/logout", LogoutHandler),
     ]))
 
 
