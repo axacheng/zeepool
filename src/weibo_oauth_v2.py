@@ -46,7 +46,12 @@ app.yaml is GAE config file.
     My testing code:
     https://code.google.com/p/zeepool/source/browse/src/weibo_oauth2_test.py
     
-    My testing page:
+    Testing weibo posting page:
+    But I have to change GAE default version to 3
+    http://axa.appspot.com/ 
+    
+    Testing weibo show user profile page:
+    But I have to change GAE default version to 4
     http://axa.appspot.com/
     
     Testing result here:
@@ -60,13 +65,13 @@ app.yaml is GAE config file.
 * app.yaml *
 ************
 application: axa
-version: 3
+version: 4
 runtime: python
 api_version: 1
 
 handlers:
 - url: /.*
-  script: weibo_oauth2_test.py
+  script: weibo_oauth_v2.py
 
 """
 
@@ -124,11 +129,21 @@ class WeiBoLogin(webapp.RequestHandler):
           access_token = r.access_token
           expires_in = r.expires_in
           client.set_access_token(access_token, expires_in)
-          
+                 
           # Access user's resource.
-          testing1 = client.get.statuses__user_timeline()
-          testing2 = client.post.statuses__update(status=POST_MY_MESSAGE)
-          self.response.out.write(testing2)
+          #testing3 = client.get.statuses__user_timeline()
+          #testing2 = client.post.statuses__update(status=POST_MY_MESSAGE)
+          #testing3 = client.get.statuses__show(id=3440531025750668)
+          weibo_uid = client.get.account__get_uid()
+          weibo_user_profile = client.get.users__show(uid=weibo_uid.uid)
+    
+          username = weibo_user_profile.screen_name
+          userimage = weibo_user_profile.profile_image_url
+          self.response.out.write('<h1>My WeiBo username is: <font color="blue">%s</font></h1> <img src="%s">' % (
+              username, userimage))
+
+          #self.response.out.write(weibo_user_profile)
+
         else:
           logging.info('no code can be found....')
           self.redirect(url)

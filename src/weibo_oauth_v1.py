@@ -1,4 +1,11 @@
 #!/usr/bin/python 
+"""
+
+This code is deprecated! we use weibo_oauth_v2.py (OAuth2.0) to access user
+resource. Please do not use this file as OAuth.
+
+"""
+
 
 """
 The MIT License
