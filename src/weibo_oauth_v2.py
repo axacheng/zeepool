@@ -16,102 +16,71 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-""" This code is changed by Axa for WeiBo Oauth2.0 testing.
-
-Original author is https://github.com/martey
-http://github.com/pythonforfacebook/facebook-sdk
-http://pypi.python.org/pypi/facebook-sdk/0.3.0
-
-Please make sure you have oauth2.0.html and app.yaml these files for test run.
-oauth2.0.html is web page for this testing code.
-app.yaml is GAE config file.
-
-*****************
-* oauth2.0.html *
-*****************
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml">
-  <head>
-    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
-    <title>WeiBo OAuth2.0 login testing</title>
-  </head>
-  
-  <body>
-    <p> WeiBo login </p>
-    <p><a href="/weibo_login">Log in with WeiBooooooo</a></p>
-    <pre>
-    WeiBo python SDK:廖雪峰
-    http://code.google.com/p/sinaweibopy/source/browse/src/weibo.py
-    
-    My testing code:
-    https://code.google.com/p/zeepool/source/browse/src/weibo_oauth2_test.py
-    
-    Testing weibo posting page:
-    But I have to change GAE default version to 3
-    http://axa.appspot.com/ 
-    
-    Testing weibo show user profile page:
-    But I have to change GAE default version to 4
-    http://axa.appspot.com/
-    
-    Testing result here:
-    http://www.weibo.com/u/1861651780
-    </pre>
-  </body>
-</html>
-
-
-************
-* app.yaml *
-************
-application: axa
-version: 4
-runtime: python
-api_version: 1
-
-handlers:
-- url: /.*
-  script: weibo_oauth_v2.py
+""" This code is changed by Axa for WeiBo Oauth2.0
 
 """
 
+import base64
+import Cookie
+import email.utils
+import hashlib
+import hmac
 import logging
 import os.path
-from weibo import APIClient
+import time
 
+from weibo import APIClient
+from google.appengine.ext import db
 from google.appengine.ext import webapp
 from google.appengine.ext.webapp import util
 from google.appengine.ext.webapp import template
 
 
-class WeiBoLogin(webapp.RequestHandler):
+WEIBO_APP_KEY='1496964127'
+WEIBO_APP_SECRET='ec756023d85cd93846a7fe52d7b6d784'
+        
+# This CALLBACK_URL must be the same as :
+# http://open.weibo.com/apps/1496964127/info/advanced
+# 裡面的 "应用回调页" Otherwise, you would get 'error:redirect_uri_mismatch'
+CALLBACK_URL='http://zeepooling.appspot.com/weibo_login'  
+        
+        
+class WeiboUser(db.Model):
+    access_token = db.StringProperty(required=True)
+    created = db.DateTimeProperty(auto_now_add=True)
+    id = db.StringProperty(required=True)
+    profile_url = db.StringProperty(required=True)
+    profile_image_url = db.StringProperty(required=True)
+    screen_name = db.StringProperty(required=True)
+    updated = db.DateTimeProperty(auto_now=True)
+
+
+class BaseHandler(webapp.RequestHandler):
+    @property
+    def current_user(self):
+        """Returns the logged in Facebook user, or None if unconnected."""
+        if not hasattr(self, "_current_user"):
+            self._current_user = None
+            user_id = parse_cookie(self.request.cookies.get("weibo_user"))
+            if user_id:
+                self._current_user = WeiboUser.get_by_key_name(user_id)
+        return self._current_user
+   
+      
+class LoginHandler(webapp.RequestHandler):
       """ WeiBo APIClient login testing.
       
       When user first time to get in our site, they should request 'code'
       by using url=client.get_authorize_url() to compile URL e.g.:
-      https://api.weibo.com/oauth2/authorize?redirect_uri=http%3A//axa.
+      https://api.weibo.com/oauth2/authorize?redirect_uri=http%3A//zeepooling.
       appspot.com&response_type=code&client_id=1496964127&display=default 
       Then, we use self.redirect() method to call that url, afterward we
       should be able to see/fetch 'code' from:
-      http://axa.appspot.com/weibo_login?code=xxyyyzzz111222333
+      http://zeepooling.appspot.com/weibo_login?code=xxyyyzzz111222333
       then we can use this code to request access_token to access user's resource.
       """
       def get(self):
-        APP_KEY='1496964127'
-        APP_SECRET='ec756023d85cd93846a7fe52d7b6d784'
-        
-        # This CALLBACK_URL must be the same as :
-        # http://open.weibo.com/apps/1496964127/info/advanced
-        # 裡面的 "应用回调页" Otherwise, you would get 'error:redirect_uri_mismatch'
-        CALLBACK_URL='http://axa.appspot.com/weibo_login'  
-        
-        # (NOTE) PLEASE CHANGE POST_MY_MESSAGE text BEFORE RUN THIS CODE!!!
-        # WeiBo would treat you as spam (duplicate is not allowed!) so you would
-        # get Server 500 error (aka: 400 Bad Gateway on weibo end).
-        POST_MY_MESSAGE = 'haha, 這是我最後的測試'
-
-
-        client = APIClient(app_key=APP_KEY, app_secret=APP_SECRET,
+        client = APIClient(app_key=WEIBO_APP_KEY, app_secret=WEIBO_APP_SECRET,
                            redirect_uri=CALLBACK_URL)
         # Compile authorize url for getting 'code'
         url = client.get_authorize_url()  
@@ -135,33 +104,72 @@ class WeiBoLogin(webapp.RequestHandler):
           #testing2 = client.post.statuses__update(status=POST_MY_MESSAGE)
           #testing3 = client.get.statuses__show(id=3440531025750668)
           weibo_uid = client.get.account__get_uid()
+          
+          # Get user profile info by uid.
           weibo_user_profile = client.get.users__show(uid=weibo_uid.uid)
     
-          username = weibo_user_profile.screen_name
-          userimage = weibo_user_profile.profile_image_url
-          self.response.out.write('<h1>My WeiBo username is: <font color="blue">%s</font></h1> <img src="%s">' % (
-              username, userimage))
-
-          #self.response.out.write(weibo_user_profile)
-
+          # Compile profile info as we wanted, and store to WeiboUser entity.
+          weibo_id = weibo_user_profile.id
+          weibo_profile_url = weibo_user_profile.profile_url
+          weibo_profile_image_url = weibo_user_profile.profile_image_url
+          weibo_screen_name = weibo_user_profile.screen_name
+          
+          user = WeiboUser(
+                     key_name=weibo_id, access_token=access_token, id=weibo_id,
+                     profile_url=weibo_profile_url, 
+                     profile_image_url=weibo_profile_image_url,
+                     screen_name=weibo_screen_name)
+          user.put()
+          set_cookie(self.response, "weibo_user", str(profile["id"]),
+                     expires=time.time() + 30 * 86400)
+          self.redirect("/")
         else:
           logging.info('no code can be found....')
           self.redirect(url)
-        
-      
-class HomeHandler(webapp.RequestHandler):
+
+
+class LogoutHandler(BaseHandler):
     def get(self):
-      args = ''
-      path = os.path.join(os.path.dirname(__file__), "oauth2.0.html")
-      self.response.out.write(template.render(path, args))
+        set_cookie(self.response, "weibo_user", "", expires=time.time() - 86400)
+        self.redirect("/")
+            
+            
+def set_cookie(response, name, value, domain=None, path="/", expires=None):
+    """Generates and signs a cookie for the give name/value"""
+    timestamp = str(int(time.time()))
+    value = base64.b64encode(value)
+    signature = cookie_signature(value, timestamp)
+    cookie = Cookie.BaseCookie()
+    cookie[name] = "|".join([value, timestamp, signature])
+    cookie[name]["path"] = path
+    if domain:
+        cookie[name]["domain"] = domain
+    if expires:
+        cookie[name]["expires"] = email.utils.formatdate(
+            expires, localtime=False, usegmt=True)
+    response.headers._headers.append(("Set-Cookie", cookie.output()[12:]))
 
 
-def main():
-    util.run_wsgi_app(webapp.WSGIApplication([
-        (r"/", HomeHandler),
-        (r"/weibo_login", WeiBoLogin),
-    ]))
+def parse_cookie(value):
+    """Parses and verifies a cookie value from set_cookie"""
+    if not value:
+        return None
+    parts = value.split("|")
+    if len(parts) != 3:
+        return None
+    if cookie_signature(parts[0], parts[1]) != parts[2]:
+        logging.warning("Invalid cookie signature %r", value)
+        return None
+    timestamp = int(parts[1])
+    
+          
+def cookie_signature(*parts):
+    """Generates a cookie signature.
 
-
-if __name__ == "__main__":
-    main()
+    We use the Weibo app secret since it is different for every app (so
+    people using this example don't accidentally all use the same secret).
+    """
+    hash = hmac.new(APP_SECRET, digestmod=hashlib.sha1)
+    for part in parts:
+        hash.update(part)
+    return hash.hexdigest()

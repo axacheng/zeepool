@@ -12,7 +12,7 @@ import facebookoauth as foauth
 import json_encoder
 import logging
 import os
-import weibo
+import weibo_oauth_v2
 
 from django.utils import simplejson
 from google.appengine.api import users
@@ -114,6 +114,10 @@ def UserLoginHandler(self):
             self._current_user = foauth.FacebookUser.get_by_key_name(user_id)
     facebook_user =  self._current_user #Returns FacebookUser db entity
 
+    # Check WeiBo user logged in or not.
+    weibo_username =  self.request.cookies.get("weibo_user")
+
+
     if openid_username:
         logging.info('OpenID USER NAME: %s' % openid_username)
         logout_link = users.create_logout_url(self.request.path)
@@ -123,7 +127,12 @@ def UserLoginHandler(self):
         logging.info("I am Facebook User %s" % facebook_user)
         logout_link = '/oauth/facebook_logout'
         return {facebook_user.name:logout_link}
-    
+
+    elif weibo_username:
+        logging.info("I am Sina User %s" % weibo_username)
+        url_link = '/oauth/weibo_logout'
+        return {weibo_username:url_link}
+
     else:
         logging.info('We cant find username, redirect to login section')
         return {}
@@ -307,6 +316,8 @@ application = webapp.WSGIApplication(
                                       ('/edit', Edit),
                                       ('/oauth/facebook_login', foauth.LoginHandler),
                                       ('/oauth/facebook_logout', foauth.LogoutHandler),
+                                      ('/oauth/weibo_login', weibo_oauth_v2.LoginHandler),
+                                      ('/oauth/weibo_logout', weibo_oauth_v2.LogoutHandler),
                                       ('/auth_handler', AuthHandler),
                                       ('/search', Search),
                                       ('/search_single_word', SearchSingleWord)],

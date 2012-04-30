@@ -77,13 +77,6 @@ class BaseHandler(webapp.RequestHandler):
         return self._current_user
 
 
-class HomeHandler(BaseHandler):
-    def get(self):
-        path = os.path.join(os.path.dirname(__file__), "oauth.html")
-        args = dict(current_user=self.current_user)
-        self.response.out.write(template.render(path, args))
-
-
 class LoginHandler(BaseHandler):
     def get(self):
         verification_code = self.request.get("code")
