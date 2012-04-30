@@ -3,14 +3,15 @@ $(document).ready(function(){
 	$(".toggle").click(function(){
     $.blockUI({ message: $('#add_main'),
 		            css: { width: '50%',
-								       top: '20%',
-											 left: '30%',
-											 cursor: 'wait', },
-							  overlayCSS:  { 
-                backgroundColor: '#000', 
-                opacity:         0.75 },								
-		});
-	  $('.blockOverlay').attr('title','點我離開取消編輯').click($.unblockUI);
+						   top: '20%',
+						   left: '30%',
+						   cursor: 'wait', },
+						   overlayCSS:  { 
+							   backgroundColor: '#000', 
+							   opacity:0.75 },					
+	}); // .blockUI end
+    
+	$('.blockOverlay').attr('title','點我離開取消編輯').click($.unblockUI);
     //reset all form fields each time when user clicking.
 		$("form").each(function(){
       this.reset();
@@ -31,21 +32,23 @@ $(document).ready(function(){
         type: formMethod,
         data: formData,
         success: function(data){
-          var responseData = $.parseJSON(data),
-              responseData_class = '';
-          switch(responsData.status){
+          var responseData = $.parseJSON(data), responseData_class = '';
+          switch(responseData.status){
             case 'error':
               responseData_class = 'response_error';
             break;
             case 'success':
               responseData_class = 'response_success';
             break;
+            default:
+                alert('Sorry, We dont get response from server while adding ' +
+                	  'your word. Please try again later.')
           }
           
           responseText.fadeOut(200, function(){
             $(this).removeClass('waiting')
                    .addClass(responseData_class)
-                   .text(responsData.message)
+                   .text(responseData.message)
                    .fadeIn(200,function(){
                        setTimeout(function(){
                        responseText.fadeOut(200,function(){

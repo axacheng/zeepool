@@ -264,12 +264,14 @@ class Add(webapp.RequestHandler):
                                                 Tag=new_tags)
                 create_entity.put()
                 response = {'status':'success', 'message':'存檔成功了'}
+                logging.info(response)
                 # using following way can convert chinese unicode to utf8
                 #http://deron.meranda.us/python/comparing_json_modules/unicode
                 json_ustr = simplejson.dumps(response, ensure_ascii=False)
                 self.response.out.write(json_ustr)
             except ValueError:
                 response = {'status':'error', 'message':'資料庫壞了...維修中'}
+                logging.info(response)
                 # using following way can convert chinese unicode to utf8
                 json_ustr = simplejson.dumps(response, ensure_ascii=False)
                 self.response.out.write(json_ustr)
