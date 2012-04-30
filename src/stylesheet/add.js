@@ -11,6 +11,14 @@ $(document).ready(function(){
 							   opacity:0.75 },					
 	}); // .blockUI end
     
+    // Second, we should hide previous 'responseData.message' text.
+    // Because, once user added new word,server would give a responseData.message 
+    // (e.g.'存檔成功' or '資料庫壞了...維修中' ) back to you. and this mesg won't
+    // be wipe out at the end. When user click '/add' again, it'd show them
+    // responseData.message as previous text. So, we've to hide() at the beginning.
+    responseText = $('#submit_result')
+    responseText.hide();
+    
 	$('.blockOverlay').attr('title','點我離開取消編輯').click($.unblockUI);
     //reset all form fields each time when user clicking.
 		$("form").each(function(){
@@ -22,7 +30,7 @@ $(document).ready(function(){
       var form = $(this),
       formData = form.serialize(),
       formMethod = form.attr('method'),
-      responseText = $('#submit_result') 
+      responseText = $('#submit_result')
       responseText.hide()
                   .addClass('waiting')
                   .text('等一下...儲存中')
@@ -53,8 +61,8 @@ $(document).ready(function(){
                        setTimeout(function(){
                        responseText.fadeOut(200,function(){
                            $(this).removeClass(responseData_class);
-                     });
-                     }, 3000);
+                       });
+                       }, 3000);
 					  $.unblockUI(); //Remove block and back to normal
 					  
 						// Show all words we have after word successfully committed.
