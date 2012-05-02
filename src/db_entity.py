@@ -15,11 +15,12 @@ class Words(db.Model):
     Define = db.TextProperty(required=True)
     Example = db.TextProperty()
     Tag = db.StringListProperty()
-    
 
-class Judgement(db.Model):
-    Good = db.IntegerProperty(required=True, default=0)
-    Bad  = db.IntegerProperty(required=True, default=0)
+
+class PollWord(db.Model):
+    like = db.IntegerProperty(required=True, default=0)
+    dislike  = db.IntegerProperty(required=True, default=0)
+    word = db.ReferenceProperty(Words, collection_name='Poll')
 
 
 class Comment(db.Model):

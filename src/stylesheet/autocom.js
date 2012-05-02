@@ -33,7 +33,14 @@ $(document).ready(function(){
     }
   });
 }); // document end
-		
+
+/*	poll function
+ * 
+ * 
+ */
+
+
+
 /* Search function 
  * jqueryUI autocomplete cannot included in $(document).ready!
  */
@@ -59,18 +66,26 @@ $(function(){
             // compute server_return object its length without hitting TotalWords   
             var key = server_return.length - 1 // decrement 1, because the first element starts as "Zero"
             var total_words = server_return[key].TotalWords
-            $('.show_result_ok').html('<p class="show_result_ok">一共找到 ' + total_words + '字</p>').show()
+            $('.show_result_ok').html('<p class="show_result_ok">一共找到 ' + total_words + '字').show()
           }
         // Loopup json result from server_return variable then compile them into html format.
         $.each(server_return, function(key) {
+        	for (i in server_return[0]) {
+            	//alert(i)
+        	}
           $('#result').append(
              '<div class="search_result">'+
-               '<p class="show_line">字：'  + server_return[key].Word +'</p>'+
-               '<p class="show_line">解釋：' + server_return[key].Define +'</p>'+
-               '<p class="show_line">例句：' + server_return[key].Example +'</p>'+
-							 '<p class="show_line">By：' + server_return[key].Creator +'</p>'+
-							 '建立時間: '+ server_return[key].Updated['ctime'] +
-							 '<a href="http://www.facebook.com/sharer.php" name="fb_share" type="button_count">' + '與朋友分享' + '</a>' +
+               '<p class="show_line">字: '  + server_return[key].Word +
+               '<span>'+
+                 '<a href="#" class="pollword" value="1" return false>Like</a>' +
+                 '<a href="#" class="pollword" value="1" return false>Dislike</a>'+
+               '</span>' +
+               '</p>'+
+               '<p class="show_line">解釋: ' + server_return[key].Define +'</p>'+
+               '<p class="show_line">例句: ' + server_return[key].Example +'</p>'+
+			   '<p class="show_line">建立者: ' + server_return[key].Creator +'</p>'+
+			   '建立時間: '+ server_return[key].Updated['ctime'] +
+			   '<a href="http://www.facebook.com/sharer.php" name="fb_share" type="button_count">' + ' 分享到Facebook' + '</a>' +
              '</div>' 
           )
         })//each end

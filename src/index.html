@@ -95,6 +95,7 @@
       <a id="edit_finish" href="/">返回首頁</a> &nbsp; &nbsp;
 			<ul class="thumb">
       {% for list_query in query %}
+        {{ list_query }}
 			 <li>
 	       <div class="edit_area" id="{{ list_query.key }}">
 		        <p> {{ list_query.Word }} </p>

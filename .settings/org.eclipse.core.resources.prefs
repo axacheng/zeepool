@@ -1,6 +1,7 @@
 eclipse.preferences.version=1
 encoding//src/home.py=utf-8
 encoding//src/stylesheet/add.js=UTF-8
+encoding//src/stylesheet/autocom.js=UTF-8
 encoding//src/stylesheet/edit.js=UTF-8
 encoding//src/weibo.py=utf-8
 encoding//src/weibo_oauth_v2.py=utf-8

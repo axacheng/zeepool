@@ -14,6 +14,7 @@ import logging
 import os
 import weibo_oauth_v2
 
+from google.appengine.ext import db
 from django.utils import simplejson
 from google.appengine.api import users
 from google.appengine.ext import webapp
@@ -115,7 +116,16 @@ def UserLoginHandler(self):
     facebook_user =  self._current_user #Returns FacebookUser db entity
 
     # Check WeiBo user logged in or not.
-    weibo_username =  self.request.cookies.get("weibo_user")
+    user_id = weibo_oauth_v2.parse_cookie(self.request.cookies.get("weibo_user"))
+    if not hasattr(self, "_current_user"):
+      self._current_user = None
+      #user_id = weibo_oauth_v2.parse_cookie(self.request.cookies.get("weibo_user"))
+      logging.info('weibo user_id:%s', user_id)
+
+      if user_id:
+        self._current_user = weibo_oauth_v2.WeiboUser.get_by_key_name(user_id)
+    logging.info('hahahaha %s', user_id)
+    weibo_username =  self._current_user #Returns WeiboUser db entity
 
 
     if openid_username:
@@ -218,10 +228,13 @@ class Search(webapp.RequestHandler):
         
         """
         search_word = self.request.get('term')
-        query = db_entity.Words.gql('WHERE Word >= :word_begin and Word <= :word_end',
-                                  word_begin=unicode(search_word),
-                                  word_end=unicode(search_word) + u'\ufffd')
+        query = db_entity.Words.all()
+        query.filter("Word >=", unicode(search_word))
+        query.filter("Word <=", unicode(search_word) + u'\ufffd')
         result = query.fetch(50, 0)
+        import sys
+        for p in result:
+          print >> sys.stderr, 'hahha', p.key()
 
         if query.count() == 0:
             # json_result is pure string type.
