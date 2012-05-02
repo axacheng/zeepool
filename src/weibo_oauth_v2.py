@@ -120,7 +120,7 @@ class LoginHandler(webapp.RequestHandler):
                      profile_image_url=weibo_profile_image_url,
                      screen_name=weibo_screen_name)
           user.put()
-          set_cookie(self.response, "weibo_user", weibo_id,
+          set_cookie(weibo_user_profile, "weibo_user", weibo_id,
                      expires=time.time() + 30 * 86400)
           self.redirect("/")
         else:
