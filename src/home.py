@@ -8,11 +8,14 @@ Created on Sep 4, 2010
 import auth_constants
 import base64
 import db_entity
+import datetime
 import facebookoauth as foauth
 import json_encoder
 import logging
 import os
 import weibo_oauth_v2
+import json
+
 
 from google.appengine.ext import db
 from django.utils import simplejson
@@ -227,31 +230,35 @@ class Search(webapp.RequestHandler):
         Return: dict: JSON object with query result and total found words.
         
         """
+        all_word = []
         search_word = self.request.get('term')
         query = db_entity.Words.all()
         query.filter("Word >=", unicode(search_word))
         query.filter("Word <=", unicode(search_word) + u'\ufffd')
         result = query.fetch(50, 0)
-        import sys
-        for p in result:
-          print >> sys.stderr, 'hahha', p.key()
 
+        for p in result:
+          fetched_word = {}
+          fetched_word['key'] = str(p.key())
+          fetched_word['Word'] = p.Word
+          fetched_word['Creator'] = p.Creator
+          fetched_word['Tag'] = p.Tag
+          fetched_word['Example'] = p.Example
+          fetched_word['Define'] = p.Define
+          all_word.append(fetched_word)
+                  
+        logging.info('xxxxxxxx', all_word)
+        json_result = json.dumps(all_word)
+        
         if query.count() == 0:
             # json_result is pure string type.
-            json_result = json_encoder.GqlEncoder().encode(result)            
-            self.response.headers['Content-Type'] = "application/json"
+            self.response.headers.add_header("Content-Type",
+                                             "application/json charset='utf-8'")
             self.response.out.write(json_result)
         else:
-            total_words = '"TotalWords":' + str(query.count())
-            # json_result is pure string type.
-            json_result = json_encoder.GqlEncoder().encode(result)
-            
-            # Rid of '[' and ']' at very beginning and end of json_result.
-            # Also remove '}' at the end then add dict of total_words
-            # Before out.write to client add '[' and ']' surround to be JSON format
-            result = json_result.strip('[]').rstrip('}') + ',' + total_words + "}"
-            self.response.headers['Content-Type'] = "application/json"         
-            self.response.out.write('[' + result + ']')
+            self.response.headers.add_header("Content-Type",
+                                             "application/json charset='utf-8'")
+            self.response.out.write(json_result)
 
   
 class Add(webapp.RequestHandler):
@@ -316,12 +323,10 @@ class Edit(webapp.RequestHandler):
         query.put()
 
 
-class SearchSingleWord(webapp.RequestHandler):
-    def get(self):
-      query = db_entity.Words.get('agp6ZWVwb29saW5ncg0LEgVXb3Jkcxjp_gIM')
-      json_result = json_encoder.GqlEncoder().encode(query.Define)
-      self.response.headers['Content-Type'] = "application/json"
-      self.response.out.write(json_result)
+class PollWord(webapp.RequestHandler):
+    def post(self):
+      cc = self.request.get('id')
+      self.response.out.write(cc)
       
       
 
@@ -334,8 +339,8 @@ application = webapp.WSGIApplication(
                                       ('/oauth/weibo_login', weibo_oauth_v2.LoginHandler),
                                       ('/oauth/weibo_logout', weibo_oauth_v2.LogoutHandler),
                                       ('/auth_handler', AuthHandler),
-                                      ('/search', Search),
-                                      ('/search_single_word', SearchSingleWord)],
+                                      ('/pollword', PollWord),
+                                      ('/search', Search)],
                                      debug=True)
 
 def main():
