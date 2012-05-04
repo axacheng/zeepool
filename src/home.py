@@ -16,7 +16,6 @@ import os
 import weibo_oauth_v2
 import json
 
-
 from google.appengine.ext import db
 from django.utils import simplejson
 from google.appengine.api import users
@@ -24,6 +23,70 @@ from google.appengine.ext import webapp
 from google.appengine.ext.webapp import template
 from google.appengine.ext.webapp.util import login_required
 from google.appengine.ext.webapp.util import run_wsgi_app
+            
+    
+class Add(webapp.RequestHandler):
+    @login_required
+    def get(self):
+        pass
+    
+    def post(self):
+        username = "".join(UserLoginHandler(self).keys())
+
+        if username:
+            creator = username
+            word = self.request.get("word")
+            define = self.request.get("define")
+            example = self.request.get("example")
+            tags = self.request.get("tag").split(',')
+            new_tags = map(lambda x:x.strip(), tags)
+            try:
+                create_entity = db_entity.Words(Creator=creator,
+                                                Word=word,
+                                                Define=define,
+                                                Example=example,
+                                                Tag=new_tags)
+                create_entity.put()
+                response = {'status':'success', 'message':'存檔成功了'}
+                logging.info(response)
+                # using following way can convert chinese unicode to utf8
+                #http://deron.meranda.us/python/comparing_json_modules/unicode
+                json_ustr = simplejson.dumps(response, ensure_ascii=False)
+                self.response.out.write(json_ustr)
+            except ValueError:
+                response = {'status':'error', 'message':'資料庫壞了...維修中'}
+                logging.info(response)
+                # using following way can convert chinese unicode to utf8
+                json_ustr = simplejson.dumps(response, ensure_ascii=False)
+                self.response.out.write(json_ustr)
+        else:
+            self.redirect(users.create_login_url(self.request.uri))
+
+
+class AuthHandler(webapp.RequestHandler):
+    """ Compile OpenID/Federated User and Oauth user authentication links.
+    
+    Read in auth_constants.py, then process OpenIdProviders and OauthProviders
+    their federated_identity or direct Oauth link and generate login URLs.
+    Here, I use dict update() to merge those two providers links.
+    
+    Return:  dict: JSON object.
+        The return will be executed by WSGI /auth_handler when index.html
+        login.js being executed.
+    """
+    def get(self):
+        for openid_provider, openid_data in auth_constants.OpenIdProviders.items():
+            op_url = openid_provider.lower() #e.g. google.com
+            #openid_data['url'] = users.create_login_url(federated_identity=op_url)
+            #Uncomment for local testing server.
+            openid_data['url'] = users.create_login_url(
+               dest_url="/", federated_identity=op_url)
+
+        oauth_provider_links = auth_constants.OauthProviders
+        oauth_provider_links.update(auth_constants.OpenIdProviders)
+        login_links = oauth_provider_links #Merge openid and oauth together then rename it.
+        logging.info('URLs %s' % login_links)
+        self.response.out.write(simplejson.dumps(login_links)) # Convert links to JSON format  
 
 
 def basicAuth(func):
@@ -50,31 +113,156 @@ def basicAuth(func):
     return callf
 
 
-class AuthHandler(webapp.RequestHandler):
-    """ Compile OpenID/Federated User and Oauth user authentication links.
-    
-    Read in auth_constants.py, then process OpenIdProviders and OauthProviders
-    their federated_identity or direct Oauth link and generate login URLs.
-    Here, I use dict update() to merge those two providers links.
-    
-    Return:  dict: JSON object.
-        The return will be executed by WSGI /auth_handler when index.html
-        login.js being executed.
-    """
-    def get(self):
-        for openid_provider, openid_data in auth_constants.OpenIdProviders.items():
-            op_url = openid_provider.lower() #e.g. google.com
-            #openid_data['url'] = users.create_login_url(federated_identity=op_url)
-            #Uncomment for local testing server.
-            openid_data['url'] = users.create_login_url(
-               dest_url="/", federated_identity=op_url)
+class Edit(webapp.RequestHandler):
+    @basicAuth
+    def get(self, username):
+        pass
 
-        oauth_provider_links = auth_constants.OauthProviders
-        oauth_provider_links.update(auth_constants.OpenIdProviders)
-        login_links = oauth_provider_links #Merge openid and oauth together then rename it.
-        logging.info('URLs %s' % login_links)
-        self.response.out.write(simplejson.dumps(login_links)) # Convert links to JSON format       
+    def post(self):
+        submitted_div = self.request.get('id')
+        key = submitted_div[1:]
+        type = submitted_div[0] # Have 3 types: d,e,t
+        query = db_entity.Words.get(key)
+        if type == 'd':
+            query.Define = self.request.get('value')
+            self.response.out.write(query.Define)
+        if type == 'e':        
+            query.Example = self.request.get('value')
+            self.response.out.write(query.Example)
+        if type == 't':
+            query.Tag = self.request.get('value')
+            self.response.out.write(query.Tag)
+        #import sys
+        #print >> sys.stderr, key, query.Define, query.Example
+        query.put()
+
+
+class MainPage(webapp.RequestHandler):
+    """ Represent the MainPage - index.html
+    
+    First of all, we check OpenID or Oauth user login status by fetching their
+    'username' which handled by UserLoginHandler() class.
+    When 'username' is False which means user hasn't been login yet, in this
+    case we would insert multiple <span> html tags as login_url links and
+    account provider's logo (e.g. google, yahoo or facebook icon) to
+    index.html <div class=login_auth>. You can check login.js to get more detail
+    information.
+    
+    MainPage-->UserLoginHandler (no username) --> 
+                 1. Activate <div class='login_auth'>
+                 2. login.js calls /auth_handler (aka: AuthHandler()), and
+                    return(aka: login_link) would be appended by jQuery to 
+                    generate <span> tag for login links.
+                 3. AuthHandler() generates login_urls and image link for
+                    OauthProviders user, and for OpenIdProviders user we use
+                    users.create_login_url method to generate url_link.
+    MainPage-->UserLoginHandler (has username) -->
+                 1. Activate <div id="add_main"> and skip <div class='login_auth>
+                 2. Construct logout_link, url_text, login_status, query
+                 3. Render to index.html
+                 
+    * For OpendID user, their login_status can be verified by user GAE build-in
+    function - get_current_user().It's simple!
+    * For Oauth user such as Facebook, we can get their /me.name (provided from
+    FB.api return) by using GAE WSGI self.request.get() method on index.html.
+    
+    
+    Return: WSGIApplication with html object
+    """
+    @basicAuth
+    def get(self):
+        username = "".join(UserLoginHandler(self).keys())
+        logout_link = "".join(UserLoginHandler(self).values())
         
+        if username:
+            url_link = logout_link
+            url_text = '登出'
+            login_status = True
+            query = db_entity.Words.all().filter('Creator =', username)
+        else:
+            logging.info('No login username be found.')
+            url_link = users.create_login_url(self.request.path)
+            url_text = '先登入才能增加新字'
+            login_status = None
+            query = None
+            
+        # Session for count amount of Words. Even username is None, we're going
+        # to render our amount of Words to everyone.
+        all_words_count = db_entity.Words.all()
+        total_words = all_words_count.count()       
+                                      
+        # Compile all the 'key' to template_dict and pass them to index.html
+        # This url_link could be logout_link or login_link depends on whether
+        # username exist or not. If it's exist then url_link is logout_link,
+        # vice versa. 
+        template_dict = {'url_link':url_link, 'url_text':url_text,
+                         'login_status':login_status,
+                         'total_words':total_words,
+                         'query':query,}
+        
+        path = os.path.join(os.path.dirname(__file__), 'index.html')
+        self.response.out.write(template.render(path, template_dict))
+        
+
+class PollWord(webapp.RequestHandler):
+    def get(self):
+      cc = self.request.get('iddddd')
+      self.response.out.write(cc)
+
+
+class Search(webapp.RequestHandler):
+    @basicAuth
+    def get(self):
+        """ Search result handler.
+        
+        Use request.get('term') to fetch <input id="search_input" name="term" > 
+        from index.html. The reason I use 'term' instead of 'q' that's because
+        jqueryUI autocomplete use 'term' this string to GET.
+        
+        Return: dict: JSON object with query result and total found words.
+                      if query.fetch() gets zero result from datastore, it'll
+                      return [] to json.dump.
+                      if query.fetch() gets result more than once from datastore
+                      , then we build dict(fetched_word) and [all_word] structure.
+                      The fetched_word would store data as multiple dicts, then we
+                      use all_word to merge multiple dicts into a list for json.
+                      e.g.: all_words = [{'Word':'a'}, {'Word':'b'}]
+                      
+                      The main reason we use [all_word] that's because the dicts
+                      uses same key 'Word' as dict's key so we should use list
+                      to merge multiple dicts.
+                
+        """
+        all_word = []
+        search_word = self.request.get('term')
+        query = db_entity.Words.all()
+        query.filter("Word >=", unicode(search_word))
+        query.filter("Word <=", unicode(search_word) + u'\ufffd')
+        result = query.fetch(50, 0)
+        
+        if result:  
+          for p in result:
+            fetched_word = {}
+            fetched_word['key'] = str(p.key())
+            fetched_word['Word'] = p.Word
+            fetched_word['Creator'] = p.Creator
+            fetched_word['Tag'] = p.Tag
+            fetched_word['Example'] = p.Example
+            fetched_word['Define'] = p.Define
+            all_word.append(fetched_word)
+
+          logging.info('Searched word is: %s', p.Word )                  
+          json_result = json.dumps(all_word)
+          self.response.headers.add_header("Content-Type",
+                                           "application/json charset='utf-8'")
+          self.response.out.write(json_result)
+        else:
+          logging.info('zero result')
+          json_result = json.dumps(result)
+          self.response.headers.add_header("Content-Type",
+                                           "application/json charset='utf-8'")
+          self.response.out.write(json_result)
+
 
 def UserLoginHandler(self):
     """ This method offers username and logout_link to MainPage().
@@ -149,186 +337,7 @@ def UserLoginHandler(self):
     else:
         logging.info('We cant find username, redirect to login section')
         return {}
-        
 
-class MainPage(webapp.RequestHandler):
-    """ Represent the MainPage - index.html
-    
-    First of all, we check OpenID or Oauth user login status by fetching their
-    'username' which handled by UserLoginHandler() class.
-    When 'username' is False which means user hasn't been login yet, in this
-    case we would insert multiple <span> html tags as login_url links and
-    account provider's logo (e.g. google, yahoo or facebook icon) to
-    index.html <div class=login_auth>. You can check login.js to get more detail
-    information.
-    
-    MainPage-->UserLoginHandler (no username) --> 
-                 1. Activate <div class='login_auth'>
-                 2. login.js calls /auth_handler (aka: AuthHandler()), and
-                    return(aka: login_link) would be appended by jQuery to 
-                    generate <span> tag for login links.
-                 3. AuthHandler() generates login_urls and image link for
-                    OauthProviders user, and for OpenIdProviders user we use
-                    users.create_login_url method to generate url_link.
-    MainPage-->UserLoginHandler (has username) -->
-                 1. Activate <div id="add_main"> and skip <div class='login_auth>
-                 2. Construct logout_link, url_text, login_status, query
-                 3. Render to index.html
-                 
-    * For OpendID user, their login_status can be verified by user GAE build-in
-    function - get_current_user().It's simple!
-    * For Oauth user such as Facebook, we can get their /me.name (provided from
-    FB.api return) by using GAE WSGI self.request.get() method on index.html.
-    
-    
-    Return: WSGIApplication with html object
-    """
-    @basicAuth
-    def get(self):
-        username = "".join(UserLoginHandler(self).keys())
-        logout_link = "".join(UserLoginHandler(self).values())
-        
-        if username:
-            url_link = logout_link
-            url_text = '登出'
-            login_status = True
-            query = db_entity.Words.all().filter('Creator =', username)
-        else:
-            logging.info('No login username be found.')
-            url_link = users.create_login_url(self.request.path)
-            url_text = '先登入才能增加新字'
-            login_status = None
-            query = None
-            
-        # Session for count amount of Words. Even username is None, we're going
-        # to render our amount of Words to everyone.
-        all_words_count = db_entity.Words.all()
-        total_words = all_words_count.count()       
-                                      
-        # Compile all the 'key' to template_dict and pass them to index.html
-        # This url_link could be logout_link or login_link depends on whether
-        # username exist or not. If it's exist then url_link is logout_link,
-        # vice versa. 
-        template_dict = {'url_link':url_link, 'url_text':url_text,
-                         'login_status':login_status,
-                         'total_words':total_words,
-                         'query':query,}
-        
-        path = os.path.join(os.path.dirname(__file__), 'index.html')
-        self.response.out.write(template.render(path, template_dict))
-    
-
-class Search(webapp.RequestHandler):
-    @basicAuth
-    def get(self):
-        """ Search result handler.
-        
-        Use request.get('term') to fetch <input id="search_input" name="term" > 
-        from index.html. The reason I use 'term' instead of 'q' that's because
-        jqueryUI autocomplete use 'term' this string to GET.
-        
-        Return: dict: JSON object with query result and total found words.
-        
-        """
-        all_word = []
-        search_word = self.request.get('term')
-        query = db_entity.Words.all()
-        query.filter("Word >=", unicode(search_word))
-        query.filter("Word <=", unicode(search_word) + u'\ufffd')
-        result = query.fetch(50, 0)
-
-        for p in result:
-          fetched_word = {}
-          fetched_word['key'] = str(p.key())
-          fetched_word['Word'] = p.Word
-          fetched_word['Creator'] = p.Creator
-          fetched_word['Tag'] = p.Tag
-          fetched_word['Example'] = p.Example
-          fetched_word['Define'] = p.Define
-          all_word.append(fetched_word)
-                  
-        logging.info('xxxxxxxx', all_word)
-        json_result = json.dumps(all_word)
-        
-        if query.count() == 0:
-            # json_result is pure string type.
-            self.response.headers.add_header("Content-Type",
-                                             "application/json charset='utf-8'")
-            self.response.out.write(json_result)
-        else:
-            self.response.headers.add_header("Content-Type",
-                                             "application/json charset='utf-8'")
-            self.response.out.write(json_result)
-
-  
-class Add(webapp.RequestHandler):
-    @login_required
-    def get(self):
-        pass
-    
-    def post(self):
-        username = "".join(UserLoginHandler(self).keys())
-
-        if username:
-            creator = username
-            word = self.request.get("word")
-            define = self.request.get("define")
-            example = self.request.get("example")
-            tags = self.request.get("tag").split(',')
-            new_tags = map(lambda x:x.strip(), tags)
-            try:
-                create_entity = db_entity.Words(Creator=creator,
-                                                Word=word,
-                                                Define=define,
-                                                Example=example,
-                                                Tag=new_tags)
-                create_entity.put()
-                response = {'status':'success', 'message':'存檔成功了'}
-                logging.info(response)
-                # using following way can convert chinese unicode to utf8
-                #http://deron.meranda.us/python/comparing_json_modules/unicode
-                json_ustr = simplejson.dumps(response, ensure_ascii=False)
-                self.response.out.write(json_ustr)
-            except ValueError:
-                response = {'status':'error', 'message':'資料庫壞了...維修中'}
-                logging.info(response)
-                # using following way can convert chinese unicode to utf8
-                json_ustr = simplejson.dumps(response, ensure_ascii=False)
-                self.response.out.write(json_ustr)
-        else:
-            self.redirect(users.create_login_url(self.request.uri))
-
-
-class Edit(webapp.RequestHandler):
-    @basicAuth
-    def get(self, username):
-        pass
-
-    def post(self):
-        submitted_div = self.request.get('id')
-        key = submitted_div[1:]
-        type = submitted_div[0] # Have 3 types: d,e,t
-        query = db_entity.Words.get(key)
-        if type == 'd':
-            query.Define = self.request.get('value')
-            self.response.out.write(query.Define)
-        if type == 'e':        
-            query.Example = self.request.get('value')
-            self.response.out.write(query.Example)
-        if type == 't':
-            query.Tag = self.request.get('value')
-            self.response.out.write(query.Tag)
-        #import sys
-        #print >> sys.stderr, key, query.Define, query.Example
-        query.put()
-
-
-class PollWord(webapp.RequestHandler):
-    def post(self):
-      cc = self.request.get('id')
-      self.response.out.write(cc)
-      
-      
 
 application = webapp.WSGIApplication(
                                      [('/', MainPage),
