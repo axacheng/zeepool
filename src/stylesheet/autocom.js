@@ -43,21 +43,25 @@ $(document).ready(function(){
    * We use $.ajax with GET method to /pollword/(.*)/(.*)
    * The first (.*) is pollword_choose. [like or dislike]
    * The second(.*) is pollword_key, which is 'name
+   * 
+   * e.g.: http://localhost:8080/pollword/like/azgduxmDmHd
    */ 
 
 	$(".pollword").live({
 		click:function(){
-		  	var pollword_choose = $(this).attr('id')
-		  	var pollword_name = $(this).attr('name')
+		  	var pollword_name = $(this).attr('id')
+		  	var pollword_choose = $(this).attr('name')
 
 		  	$.ajax({
-				url: '/pollword/' + c + '/' +d,
+				url: '/pollword/' + pollword_choose + '/' + pollword_name,
 				type: "GET",
 				dataType: "json",
 				contentType: "application/json; charset=utf-8",
 				success: function(response){
+					alert(response.total_count)
 				},
 				error: function(response){
+					alert('DB error')  // (TODO): Need to change description.
 				}
 			}); //.ajax
 		}  //poll .click end

@@ -204,46 +204,39 @@ class MainPage(webapp.RequestHandler):
 class PollWord(webapp.RequestHandler):
   """
   pollword_choose, like 
-  
   """
   def get(self, pollword_choose, pollword_key):
-      logging.info('I chosen: %s', pollword_choose)
-      logging.info('Word key: %s', pollword_key)
+    shard_name = '%s_%s' % (pollword_key, str(random.randint(1, 4)))
       
-      shard_name = 'counter_%s_word_%d' % (pollword_choose, 
-                                           random.randint(1, 4))
-      
-      if pollword_choose == 'like': 
-        counter = db_entity.CounterLikeWord.get_by_key_name(shard_name,
-                                                            parent=None)
-        if counter is None:
-          counter = db_entity.CounterLikeWord(key_name=shard_name,
-                                              name=pollword_key)
-      else:  # pollword_choose is 'dislike'
-        counter = db_entity.CounterDislikeWord.get_by_key_name(shard_name,
-                                                               parent=None)
-        if counter is None:
-          counter = db_entity.CounterDislikeWord(key_name=shard_name,
-                                                 name=pollword_key)
+    if pollword_choose == 'like':
+      counter = db_entity.CounterLikeWord.get_by_key_name(shard_name)
+      if counter is None:
+        counter = db_entity.CounterLikeWord(key_name=shard_name, name=pollword_key)
+      return_counter = db_entity.CounterLikeWord
 
-      counter.value += 1
-      counter.put()
+    else:  # dislike
+      counter = db_entity.CounterDislikeWord.get_by_key_name(shard_name)
+      if counter is None:
+        counter = db_entity.CounterDislikeWord(key_name=shard_name, name=pollword_key)
+      return_counter = db_entity.CounterDislikeWord
       
-
-      response = {'success':True}
-      json_result = simplejson.dumps(response)
-
-      self.response.headers.add_header("Content-Type",
-                                       "application/json charset='utf-8'")
-      self.response.out.write(json_result)
+    counter.value += 1
+    counter.put()
       
-  """
-      ancestor = db_entity.Counter.get_by_key_name(key_names=pollword_choose, parent=None)
-      query = db.Query(ancestor)
-      query.filter('name =', pollword_key)
-      query.value += 1
-      query.put()
-     """ 
+    # Fetch counter count and return to client.
+    logging.info('Fetching for key: %s', pollword_key)
+    total = 0 
+    counters = return_counter.all().filter('name =', pollword_key)
+    for counter in counters:
+      total += counter.value
+      
+    response = {'total_count': total}
+    logging.info(response)
+    json_result = simplejson.dumps(response)
+
+    self.response.headers.add_header("Content-Type",
+                                     "application/json charset='utf-8'")
+    self.response.out.write(json_result)
 
 
 class Search(webapp.RequestHandler):
