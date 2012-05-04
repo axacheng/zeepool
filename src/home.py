@@ -4,19 +4,15 @@ Created on Sep 4, 2010
 
 @author: axa
 '''
-
 import auth_constants
 import base64
 import db_entity
 import datetime
 import facebookoauth as foauth
-import json_encoder
 import logging
 import os
 import weibo_oauth_v2
-import json
 
-from google.appengine.ext import db
 from django.utils import simplejson
 from google.appengine.api import users
 from google.appengine.ext import webapp
@@ -252,13 +248,13 @@ class Search(webapp.RequestHandler):
             all_word.append(fetched_word)
 
           logging.info('Searched word is: %s', p.Word )                  
-          json_result = json.dumps(all_word)
+          json_result = simplejson.dumps(all_word)
           self.response.headers.add_header("Content-Type",
                                            "application/json charset='utf-8'")
           self.response.out.write(json_result)
         else:
           logging.info('zero result')
-          json_result = json.dumps(result)
+          json_result = simplejson.dumps(result)
           self.response.headers.add_header("Content-Type",
                                            "application/json charset='utf-8'")
           self.response.out.write(json_result)
