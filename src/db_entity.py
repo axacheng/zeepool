@@ -10,18 +10,21 @@ class Words(db.Model):
     Created = db.DateTimeProperty(auto_now_add=True)
     Updated = db.DateTimeProperty(auto_now=True)
     Creator = db.StringProperty(required=True)
-    #Creator = db.ReferenceProperty(Users, collection_name='words')
     Word = db.StringProperty(required=True)
     Define = db.TextProperty(required=True)
     Example = db.TextProperty()
     Tag = db.StringListProperty()
 
 
-class PollWord(db.Model):
-    like = db.IntegerProperty(required=True, default=0)
-    dislike  = db.IntegerProperty(required=True, default=0)
-    word = db.ReferenceProperty(Words, collection_name='Poll')
+class CounterLikeWord(db.Model):
+    name  = db.StringProperty(required=True)
+    value = db.IntegerProperty(required=True, default=0)
 
+
+class CounterDislikeWord(db.Model):
+    name  = db.StringProperty(required=True)
+    value = db.IntegerProperty(required=True, default=0)
+    
 
 class Comment(db.Model):
     Word = db.ReferenceProperty(Words, collection_name='comment')

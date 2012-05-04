@@ -11,6 +11,7 @@ import datetime
 import facebookoauth as foauth
 import logging
 import os
+import random
 import weibo_oauth_v2
 
 from django.utils import simplejson
@@ -201,9 +202,48 @@ class MainPage(webapp.RequestHandler):
         
 
 class PollWord(webapp.RequestHandler):
-    def get(self):
-      cc = self.request.get('iddddd')
-      self.response.out.write(cc)
+  """
+  pollword_choose, like 
+  
+  """
+  def get(self, pollword_choose, pollword_key):
+      logging.info('I chosen: %s', pollword_choose)
+      logging.info('Word key: %s', pollword_key)
+      
+      shard_name = 'counter_%s_word_%d' % (pollword_choose, 
+                                           random.randint(1, 4))
+      
+      if pollword_choose == 'like': 
+        counter = db_entity.CounterLikeWord.get_by_key_name(shard_name,
+                                                            parent=None)
+        if counter is None:
+          counter = db_entity.CounterLikeWord(key_name=shard_name,
+                                              name=pollword_key)
+      else:  # pollword_choose is 'dislike'
+        counter = db_entity.CounterDislikeWord.get_by_key_name(shard_name,
+                                                               parent=None)
+        if counter is None:
+          counter = db_entity.CounterDislikeWord(key_name=shard_name,
+                                                 name=pollword_key)
+
+      counter.value += 1
+      counter.put()
+      
+
+      response = {'success':True}
+      json_result = simplejson.dumps(response)
+
+      self.response.headers.add_header("Content-Type",
+                                       "application/json charset='utf-8'")
+      self.response.out.write(json_result)
+      
+  """
+      ancestor = db_entity.Counter.get_by_key_name(key_names=pollword_choose, parent=None)
+      query = db.Query(ancestor)
+      query.filter('name =', pollword_key)
+      query.value += 1
+      query.put()
+     """ 
 
 
 class Search(webapp.RequestHandler):
@@ -344,7 +384,7 @@ application = webapp.WSGIApplication(
                                       ('/oauth/weibo_login', weibo_oauth_v2.LoginHandler),
                                       ('/oauth/weibo_logout', weibo_oauth_v2.LogoutHandler),
                                       ('/auth_handler', AuthHandler),
-                                      ('/pollword', PollWord),
+                                      ('/pollword/(.*)/(.*)', PollWord),
                                       ('/search', Search)],
                                      debug=True)
 

@@ -39,24 +39,31 @@ $(document).ready(function(){
    * can not select 'freshest' DOM, so we have to use .live() after click event
    * gets triggered to select '.pollword' in <a>.
    * http://api.jquery.com/live/
+   * 
+   * We use $.ajax with GET method to /pollword/(.*)/(.*)
+   * The first (.*) is pollword_choose. [like or dislike]
+   * The second(.*) is pollword_key, which is 'name
    */ 
+
 	$(".pollword").live({
 		click:function(){
-			$.ajax({
-				url: "/pollword",
-				type: "POST",
-				data: {'id':'cccc'},
+		  	var pollword_choose = $(this).attr('id')
+		  	var pollword_name = $(this).attr('name')
+
+		  	$.ajax({
+				url: '/pollword/' + c + '/' +d,
+				type: "GET",
 				dataType: "json",
 				contentType: "application/json; charset=utf-8",
-				success: function(){
-					alert('ok')
+				success: function(response){
 				},
-				error: function(){
-					alert('bad')
+				error: function(response){
 				}
 			}); //.ajax
 		}  //poll .click end
 	}) //live end
+	
+	
 }); // document end
 
 /* Search function 
@@ -93,8 +100,8 @@ $(function(){
              '<div class="search_result">'+
                '<p class="show_line">字: '  + server_return[key].Word +
                '<span>'+
-                 '<a href="#" class="pollword" id=' + server_return[key].key + '>Like</a>  ' +
-                 '<a href="#" class="pollword" id=' + server_return[key].key + '>Dislike</a>'+
+                 '<a name="like" class="pollword" href="#" id=' + server_return[key].key + '>Like</a>  ' +
+                 '<a name="dislike" class="pollword" href="#" id=' + server_return[key].key + '>Dislike</a>'+
                '</span>' +
                '</p>'+
                '<p class="show_line">解釋: ' + server_return[key].Define +'</p>'+
