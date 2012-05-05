@@ -1,0 +1,26 @@
+application: zeepooling
+version: 9
+runtime: python
+api_version: 1
+
+
+builtins:
+- datastore_admin: on
+
+handlers:
+- url: /stylesheet
+  static_dir: stylesheet
+
+- url: /image/(.*\.(gif|png|jpg))
+  static_files: image/\1
+  upload: image/(.*)
+
+- url: /_ah/login_required
+  script: do_openid_login.py
+
+- url: /.*
+  script: home.py
+
+- url: /admin/.*
+  script: admin.py
+  login: admin
