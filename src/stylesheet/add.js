@@ -1,5 +1,5 @@
 $(document).ready(function(){
-	//First hide form on add_form, when user clicking 'Add' it will show up
+	//First hide form on add_form, when user clicking 'Add' it will show up.
 	$(".toggle").click(function(){
     $.blockUI({ message: $('#add_main'),
 		            css: { width: '50%',

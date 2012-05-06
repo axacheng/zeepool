@@ -20,14 +20,22 @@
 .#*
 .DS_Store
 .del-*
+<<<<<<< HEAD
+.make.state
+.nse_depinfo
+=======
 .deployables
 .hg
 .make.state
 .nse_depinfo
 .svn
+>>>>>>> 622dd0456abe852674ec1b77ef42a9d5659cb83c
 CVS.adm
 RCS
 RCSLOG
 SCCS
 _$*
+<<<<<<< HEAD
+=======
 _svn
+>>>>>>> 622dd0456abe852674ec1b77ef42a9d5659cb83c
