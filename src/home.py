@@ -199,13 +199,8 @@ class MainPage(webapp.RequestHandler):
         
         path = os.path.join(os.path.dirname(__file__), 'index.html')
         self.response.out.write(template.render(path, template_dict))
-        
 
-class PollWord(webapp.RequestHandler):
-  """
-  pollword_choose, like 
-  """
-  def get(self, pollword_choose, pollword_key):
+def PollCounter(pollword_choose, pollword_key, display_for_search=True):
     shard_name = '%s_%s' % (pollword_key, str(random.randint(1, 4)))
       
     if pollword_choose == 'like':
@@ -219,19 +214,30 @@ class PollWord(webapp.RequestHandler):
       if counter is None:
         counter = db_entity.CounterDislikeWord(key_name=shard_name, name=pollword_key)
       return_counter = db_entity.CounterDislikeWord
+    
+    if display_for_search:
+      # Fetch counter count and return to client.
+      total = 0 
+      counters = return_counter.all().filter('name =', pollword_key)
+      for counter in counters:
+        total += counter.value
       
-    counter.value += 1
-    counter.put()
+        response = {'display_for_search_total_count': total}
+        logging.info(response)
+        return response
       
-    # Fetch counter count and return to client.
-    logging.info('Fetching for key: %s', pollword_key)
-    total = 0 
-    counters = return_counter.all().filter('name =', pollword_key)
-    for counter in counters:
-      total += counter.value
-      
-    response = {'total_count': total}
-    logging.info(response)
+    else:  
+      counter.value += 1
+      counter.put()      
+  
+
+class PollWord(webapp.RequestHandler):
+  """
+  pollword_choose, like 
+  """
+  def get(self, pollword_choose, pollword_key):
+    response = PollCounter(pollword_choose, pollword_key,
+                           display_for_search=False)
     json_result = simplejson.dumps(response)
 
     self.response.headers.add_header("Content-Type",
