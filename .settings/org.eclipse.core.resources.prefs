@@ -1,0 +1,10 @@
+eclipse.preferences.version=1
+encoding//src/home.py=utf-8
+<<<<<<< HEAD
+=======
+encoding//src/stylesheet/add.js=UTF-8
+encoding//src/stylesheet/autocom.js=UTF-8
+encoding//src/stylesheet/edit.js=UTF-8
+encoding//src/weibo.py=utf-8
+encoding//src/weibo_oauth_v2.py=utf-8
+>>>>>>> 622dd0456abe852674ec1b77ef42a9d5659cb83c
