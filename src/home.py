@@ -215,7 +215,7 @@ def PollCounter(pollword_choose, pollword_key, display_for_search=True):
         total_dislike += counter_dislike.value
         
       response = {'total_like_count': total_like,
-                  'total_dislike_count': total_dislike_count}
+                  'total_dislike_count': total_dislike}
       logging.info(response)
       
       return response    
@@ -277,8 +277,14 @@ class Search(webapp.RequestHandler):
                       return [] to json.dump.
                       if query.fetch() gets result more than once from datastore
                       , then we build dict(fetched_word) and [all_word] structure.
-                      The fetched_word would store data as multiple dicts, then we
-                      use all_word to merge multiple dicts into a list for json.
+                      
+                      For the Poll word count, we use PollCounter() method to
+                      fetch the 'like' and 'dislike' counting result from
+                      CounterLikeWord and CounterDislikeWord datastore, and then
+                      we unzip value by their key 'total_like_count' and 
+                      'total_dislike_count'. Finally, fetched_word would store 
+                      all the data as multiple dicts, then we use all_word to
+                      merge multiple dicts into a list for json.
                       e.g.: all_words = [{'Word':'a'}, {'Word':'b'}]
                       
                       The main reason we use [all_word] that's because the dicts

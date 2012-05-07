@@ -102,8 +102,10 @@ $(function(){
         	//alert(server_return[key].key)
           $('#result').append(
              '<div class="search_result">'+
-               '<p class="show_line">字: '  + server_return[key].Word +
+               '<p class="show_line">字: '  + server_return[key].Word + '    ' +
                '<span>'+
+                 '<b><a>' + server_return[key].Like +  '</a></b>  讚,' +
+                 '<b><a>' + server_return[key].Dislike + '</a></b> 不喜歡 ' +
                  '<a name="like" class="pollword" href="#" id=' + server_return[key].key + '>Like</a>  ' +
                  '<a name="dislike" class="pollword" href="#" id=' + server_return[key].key + '>Dislike</a>'+
                '</span>' +
