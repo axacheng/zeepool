@@ -2,11 +2,7 @@
 '''
 Created on Sep 4, 2010
 
-<<<<<<< HEAD
-@author: axa and gafie
-=======
-@author: axa
->>>>>>> 622dd0456abe852674ec1b77ef42a9d5659cb83c
+@author: Axa Cheng
 '''
 import auth_constants
 import base64
