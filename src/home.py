@@ -257,12 +257,6 @@ class PollWord(webapp.RequestHandler):
   def get(self, pollword_choose, pollword_key):
     PollCounter(pollword_choose, pollword_key, display_for_search=False)
     
-    """
-    json_result = simplejson.dumps(response)
-    self.response.headers.add_header("Content-Type",
-                                     "application/json charset='utf-8'")
-    self.response.out.write(json_result)
-    """
 
 class Search(webapp.RequestHandler):
     @basicAuth
@@ -396,31 +390,7 @@ def UserLoginHandler(self):
     else:
       weibo_username = None
       
-    
-    """      
-class BaseHandler(webapp.RequestHandler):
-    @property
-    def current_user(self):
-        if not hasattr(self, "_current_user"):
-            self._current_user = None
-            weibo_cookie = parse_cookie(self.request.cookies.get("weibo_user"))
-            
-            if weibo_cookie:
-              weibo_user_id = weibo_cookie
-              weibo_user_ancestor = WeiboUser.get_by_key_name(weibo_user_id)
-              query = db.Query(weibo_user_ancestor)
-              for name in query.fetch(1):
-                weibo_screen_name = name.screen_name
-              
-              logging.info('cccc222 %s', weibo_screen_name)              
-              self._current_user = weibo_screen_name 
-            
-            else:
-              self._current_user =  78787788888
-                
-        return self._current_user
-    """
-
+      
     if openid_username:
         logging.info('OpenID USER NAME: %s' % openid_username)
         logout_link = users.create_logout_url(self.request.path)
