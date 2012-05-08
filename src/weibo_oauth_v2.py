@@ -58,16 +58,16 @@ class WeiboUser(db.Model):
 class BaseHandler(webapp.RequestHandler):
     @property
     def current_user(self):
-        """Returns the logged in Facebook user, or None if unconnected."""
+        """Returns the logged in Weibo user, or None if unconnected."""
         if not hasattr(self, "_current_user"):
             self._current_user = None
             user_id = parse_cookie(self.request.cookies.get("weibo_user"))
             if user_id:
                 self._current_user = WeiboUser.get_by_key_name(user_id)
         return self._current_user
-   
-      
-class LoginHandler(webapp.RequestHandler):
+         
+
+class LoginHandler(BaseHandler):
       """ WeiBo APIClient login testing.
       
       When user first time to get in our site, they should request 'code'
@@ -114,14 +114,16 @@ class LoginHandler(webapp.RequestHandler):
           weibo_profile_image_url = weibo_user_profile.profile_image_url
           weibo_screen_name = weibo_user_profile.screen_name
           
+          
           user = WeiboUser(
                      key_name=weibo_id, access_token=access_token, id=weibo_id,
                      profile_url=weibo_profile_url, 
                      profile_image_url=weibo_profile_image_url,
                      screen_name=weibo_screen_name)
           user.put()
-          set_cookie(weibo_user_profile, "weibo_user", weibo_id,
+          set_cookie(self.response, "weibo_user", str(weibo_id),
                      expires=time.time() + 30 * 86400)
+          logging.info('Set Weibo cookie is okay')
           self.redirect("/")
         else:
           logging.info('no code can be found....')
@@ -136,17 +138,20 @@ class LogoutHandler(BaseHandler):
             
 def set_cookie(response, name, value, domain=None, path="/", expires=None):
     """Generates and signs a cookie for the give name/value"""
+    import sys
     timestamp = str(int(time.time()))
     value = base64.b64encode(value)
     signature = cookie_signature(value, timestamp)
     cookie = Cookie.BaseCookie()
     cookie[name] = "|".join([value, timestamp, signature])
     cookie[name]["path"] = path
+    
     if domain:
         cookie[name]["domain"] = domain
     if expires:
         cookie[name]["expires"] = email.utils.formatdate(
             expires, localtime=False, usegmt=True)
+        
     response.headers._headers.append(("Set-Cookie", cookie.output()[12:]))
 
 
@@ -161,6 +166,13 @@ def parse_cookie(value):
         logging.warning("Invalid cookie signature %r", value)
         return None
     timestamp = int(parts[1])
+    if timestamp < time.time() - 30 * 86400:
+        logging.warning("Expired cookie %r", value)
+        return None
+    try:
+        return base64.b64decode(parts[0]).strip()
+    except:
+        return None
     
           
 def cookie_signature(*parts):

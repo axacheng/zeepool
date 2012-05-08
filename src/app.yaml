@@ -15,6 +15,10 @@ handlers:
   static_files: image/\1
   upload: image/(.*)
 
+- url: /favicon\.ico
+  static_files: image/favicon.ico
+  upload: image/(.*)
+
 - url: /_ah/login_required
   script: do_openid_login.py
 

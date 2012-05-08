@@ -16,6 +16,7 @@ import weibo_oauth_v2
 
 from django.utils import simplejson
 from google.appengine.api import users
+from google.appengine.ext import db
 from google.appengine.ext import webapp
 from google.appengine.ext.webapp import template
 from google.appengine.ext.webapp.util import login_required
@@ -350,11 +351,24 @@ def UserLoginHandler(self):
          resource to identify your profile info (e.g. access_token or login 
          status)
       
-      2. Sina weibo user: Similar as facebook API but I use standard oauth 1.0
-                     protocol to get access_token then use it token with weibo
-                     weibopy.api API to get username. I use 'sina_username'
-                     cookie to control user login/logout status.
-                     
+      2. Sina weibo user: Similar as Facebook python API.
+         When your click Weibo login icon on our page, we will deliver your to
+         weibo authentication page to get access_token by OAuth2.0.
+         Once authentication flow successful then we set "weibo_user" cookie on
+         user's browser. When main page loaded, we would check weibo_user cookie
+         by parse_cookie method which would decode cookie format and pull Weibo
+         User's ID out. More detail check:
+             weibo_oauth_v2.py line 112: 'weistr(weibo_user_profile.id)' 
+             weibo_oauth_v2.py line 142:  set_cookie(self.response, 
+                                                     "weibo_user",
+                                                     str(weibo_id),
+        About the decode, you can check weibo_oauth_v2.py line 173
+              base64.b64decode(parts[0]).strip()
+        
+        Once we got Weibo user's ID, then we use it as datastore key_name to
+        fetch its value(aka: Weibo username) from screen_name column.
+        Finally, we use screen_name to determine user login or not.
+                   
     Return: dict: {logged in username:logout URL link}
     """
     # Check OpenID/Federated user logged in or not.
@@ -370,17 +384,42 @@ def UserLoginHandler(self):
     facebook_user =  self._current_user #Returns FacebookUser db entity
 
     # Check WeiBo user logged in or not.
-    user_id = weibo_oauth_v2.parse_cookie(self.request.cookies.get("weibo_user"))
-    if not hasattr(self, "_current_user"):
-      self._current_user = None
-      #user_id = weibo_oauth_v2.parse_cookie(self.request.cookies.get("weibo_user"))
-      logging.info('weibo user_id:%s', user_id)
-
-      if user_id:
-        self._current_user = weibo_oauth_v2.WeiboUser.get_by_key_name(user_id)
-    logging.info('hahahaha %s', user_id)
-    weibo_username =  self._current_user #Returns WeiboUser db entity
-
+    weibo_cookie = weibo_oauth_v2.parse_cookie(self.request.cookies.get("weibo_user"))
+    if weibo_cookie:
+      weibo_user_id = weibo_cookie
+      weibo_user_ancestor = weibo_oauth_v2.WeiboUser.get_by_key_name(weibo_user_id)
+      query = db.Query(weibo_user_ancestor)
+      for name in query.fetch(1):
+        weibo_screen_name = name.screen_name      
+      weibo_username = weibo_screen_name
+      
+    else:
+      weibo_username = None
+      
+    
+    """      
+class BaseHandler(webapp.RequestHandler):
+    @property
+    def current_user(self):
+        if not hasattr(self, "_current_user"):
+            self._current_user = None
+            weibo_cookie = parse_cookie(self.request.cookies.get("weibo_user"))
+            
+            if weibo_cookie:
+              weibo_user_id = weibo_cookie
+              weibo_user_ancestor = WeiboUser.get_by_key_name(weibo_user_id)
+              query = db.Query(weibo_user_ancestor)
+              for name in query.fetch(1):
+                weibo_screen_name = name.screen_name
+              
+              logging.info('cccc222 %s', weibo_screen_name)              
+              self._current_user = weibo_screen_name 
+            
+            else:
+              self._current_user =  78787788888
+                
+        return self._current_user
+    """
 
     if openid_username:
         logging.info('OpenID USER NAME: %s' % openid_username)
