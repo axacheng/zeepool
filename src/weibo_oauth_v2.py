@@ -138,7 +138,6 @@ class LogoutHandler(BaseHandler):
             
 def set_cookie(response, name, value, domain=None, path="/", expires=None):
     """Generates and signs a cookie for the give name/value"""
-    import sys
     timestamp = str(int(time.time()))
     value = base64.b64encode(value)
     signature = cookie_signature(value, timestamp)
