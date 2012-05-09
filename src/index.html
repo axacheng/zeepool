@@ -87,14 +87,14 @@
 	</div>
 </div> <!-- home -->
 
-{% if query %}
+{% if user_editable_word %}
   <div id="edit">
   	
 		<div id="edit_main">
   	  <a name="myAnchor" id="myAnchor"></a> <!--[CANNOT REMOVE] The target for div moving-->
       <a id="edit_finish" href="/">返回首頁</a> &nbsp; &nbsp;
 			<ul class="thumb">
-      {% for list_query in query %}
+      {% for list_query in user_editable_word %}
         {{ list_query }}
 			 <li>
 	       <div class="edit_area" id="{{ list_query.key }}">

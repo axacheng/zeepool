@@ -165,7 +165,15 @@ class MainPage(webapp.RequestHandler):
     FB.api return) by using GAE WSGI self.request.get() method on index.html.
     
     
-    Return: WSGIApplication with html object
+    Return: WSGIApplication with html object with dict type
+           {template_dict}
+               'url_link': login or logout URL link.
+               'url_text': Description for url_link.
+               'login_status': If UserLoginHandler return True, then it'd be 
+                               True in login_status. Otherwise, None.
+               'user_editable_word': All the words created by logged in user.
+                                     Return here would be reused for rendering
+                                     /edit page. (aka: /#myAnchor)
     """
     @basicAuth
     def get(self):
@@ -176,13 +184,13 @@ class MainPage(webapp.RequestHandler):
             url_link = logout_link
             url_text = '登出'
             login_status = True
-            query = db_entity.Words.all().filter('Creator =', username)
+            user_editable_word = db_entity.Words.all().filter('Creator =', username)
         else:
             logging.info('No login username be found.')
             url_link = users.create_login_url(self.request.path)
             url_text = '先登入才能增加新字'
             login_status = None
-            query = None
+            user_editable_word = None
             
         # Session for count amount of Words. Even username is None, we're going
         # to render our amount of Words to everyone.
@@ -196,7 +204,7 @@ class MainPage(webapp.RequestHandler):
         template_dict = {'url_link':url_link, 'url_text':url_text,
                          'login_status':login_status,
                          'total_words':total_words,
-                         'query':query,}
+                         'user_editable_word':user_editable_word,}
         
         path = os.path.join(os.path.dirname(__file__), 'index.html')
         self.response.out.write(template.render(path, template_dict))
@@ -384,30 +392,35 @@ def UserLoginHandler(self):
       weibo_user_ancestor = weibo_oauth_v2.WeiboUser.get_by_key_name(weibo_user_id)
       query = db.Query(weibo_user_ancestor)
       for name in query.fetch(1):
-        weibo_screen_name = name.screen_name      
-      weibo_username = weibo_screen_name
+        weibo_screen_name = name.screen_name
+       
+      weibo_username = weibo_screen_name + ':' + weibo_user_id + '@weibo'
       
     else:
       weibo_username = None
       
       
     if openid_username:
+        # yahooo https://me.yahoo.com/axanett:123434axanett@yahoo.com.tw
+        # google georgeecheng:1234566georgeecheng@gmail.com
+        openid_username = openid_username.nickname() + ':' + openid_username.user_id() + openid_username.email()
         logging.info('OpenID USER NAME: %s' % openid_username)
         logout_link = users.create_logout_url(self.request.path)
-        return {openid_username.nickname():logout_link}
+        return {openid_username:logout_link}
 
     elif facebook_user:
-        logging.info("I am Facebook User %s" % facebook_user)
+        facebook_user = facebook_user.name + ':' + facebook_user.id + '@facebook'
+        logging.info("%s logged in." % facebook_user)
         logout_link = '/oauth/facebook_logout'
-        return {facebook_user.name:logout_link}
+        return {facebook_user:logout_link}
 
     elif weibo_username:
-        logging.info("I am Sina User %s" % weibo_username)
+        logging.info("%s logged in." % weibo_username)
         url_link = '/oauth/weibo_logout'
         return {weibo_username:url_link}
 
     else:
-        logging.info('We cant find username, redirect to login section')
+        logging.info('We cant find username, redirect to login page.')
         return {}
 
 
