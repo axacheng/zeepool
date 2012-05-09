@@ -46,7 +46,7 @@ class Add(webapp.RequestHandler):
                                                 Tag=new_tags)
                 create_entity.put()
                 response = {'status':'success', 'message':'存檔成功了'}
-                logging.info(response)
+                logging.info('%s added new word: %s', username, word)
                 # using following way can convert chinese unicode to utf8
                 #http://deron.meranda.us/python/comparing_json_modules/unicode
                 json_ustr = simplejson.dumps(response, ensure_ascii=False)
@@ -401,10 +401,9 @@ def UserLoginHandler(self):
       
       
     if openid_username:
-        # yahooo https://me.yahoo.com/axanett:123434axanett@yahoo.com.tw
-        # google georgeecheng:1234566georgeecheng@gmail.com
-        openid_username = openid_username.nickname() + ':' + openid_username.user_id() + openid_username.email()
-        logging.info('OpenID USER NAME: %s' % openid_username)
+        openid_user_id = ':' + openid_username.user_id() + '@'
+        openid_username = openid_username.email().replace('@', openid_user_id)
+        logging.info('%s logged in.' % openid_username)
         logout_link = users.create_logout_url(self.request.path)
         return {openid_username:logout_link}
 
