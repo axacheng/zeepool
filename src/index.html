@@ -16,12 +16,11 @@
 <body>
 
 
-<div>
-<div id="home">
 	<div id="banner">
 		Banner LOGO
 	</div>
-		
+	<div id="home">
+
 	<div id="search">
 		<form action="/search?" id="search_form" method="GET">
 			<div>
@@ -72,11 +71,9 @@
 		 <a class="anchorLink" id="edit_toggle" href="#myAnchor" ref="" >修改</a> &nbsp; &nbsp;
 	   <a href="{{ url_link }}"> {{ url_text }} </a>
 	{% else %}
-    <div class="login_auth"></div>
-		</div>
-		 
+    <div class="login_auth"></div>		 
   {% endif %}
-  </div> <!-- admin -->
+  </div> <!-- admin end-->
 	<br><br>
 	<div id="top10">
 		<a id="top10_link" href="/top10">Top10</a> &nbsp; &nbsp;
@@ -118,6 +115,5 @@
 	</div> <!-- edit -->
 {% endif %}
 
-</div>
 </body>
 </html>

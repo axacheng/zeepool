@@ -1,40 +1,48 @@
+
+body{
+  height: 100%;  /* (TODO) need to fix it! */
+  padding: 0;
+  margin: 0;
+  border: 0;
+}
+
 #home{
-	height:100%;
-	position:relative;
-  background-color: #D4DCF7;
-  background-position: 0% 0%;
-    background-position-x: 0%;
-		background-position-y: 0%;
-  background-repeat: repeat-x;
-    background-repeat-x: repeat;
-		background-repeat-y: no-repeat;
-	color: Black;
+	width: 100%;
+	height: 100%;
+	left:0%;
+	top:40px;
+  background-color: #0067C8; /* #882811 */
+	color: Black;	
 }
 
 #banner{
-  width:70%;
-  height:25%;
+  width:100%;
+  height:40px;
   position:absolute;
+  background-color: #252525;
   left:0%;
   top:0%;
 }
 
 #search{
   width:70%;
-  height:25%;
+  height:10%;
   position:absolute;
   left:0%;
-  top:25%;
+  top:40px;
+  border: 1px solid;
+  border-color:#FF0000;
 }
 
 #search_input{
-  font-family:"Arial Black";
-	font-size:30px;
-	font-weight:blod;
 	width:250px;
+	height:100%;
 	position:absolute;
-  left:40%;
-  top:40%;
+  left:10%;
+  top:0%;
+  font-family:"Arial Black";
+  font-size:40px;
+  font-weight:blod;
 }
 
 .search_result{
@@ -44,10 +52,10 @@
 
 #result{
   width:70%;
-  height:60%;
+  height:80%;
   position:absolute;
   left:0%;
-  top:50%;
+  top: 20%;
 }
 
 #admin{
@@ -56,18 +64,6 @@
   position:absolute;
   right:0%;
   top:0%;
-}
-
-#kx001_btn_login{
-  position:absolute;
-  right:16%;
-	top: 0%;
-}
-
-#sina_weibo{
-  position:absolute;
-  right:16%;
-  top: 20%;
 }
 
 #top10{
