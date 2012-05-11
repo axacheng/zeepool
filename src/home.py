@@ -309,10 +309,11 @@ class Search(webapp.RequestHandler):
             fetched_word = {}
             fetched_word['key'] = str(p.key())
             fetched_word['Word'] = p.Word
-            fetched_word['Creator'] = p.Creator
+            fetched_word['Creator'] = p.Creator.split(':')[1]
             fetched_word['Tag'] = p.Tag
             fetched_word['Example'] = p.Example
             fetched_word['Define'] = p.Define
+            fetched_word['Created'] = p.Created.strftime('%Y-%m-%d')
             fetched_word['Like'] = word_count['total_like_count']
             fetched_word['Dislike'] = word_count['total_dislike_count']
             all_word.append(fetched_word)
@@ -394,21 +395,22 @@ def UserLoginHandler(self):
       for name in query.fetch(1):
         weibo_screen_name = name.screen_name
        
-      weibo_username = weibo_screen_name + ':' + weibo_user_id + '@weibo'
+      weibo_username = weibo_user_id + ':' + weibo_screen_name + '@weibo'
       
     else:
       weibo_username = None
       
       
     if openid_username:
-        openid_user_id = ':' + openid_username.user_id() + '@'
-        openid_username = openid_username.email().replace('@', openid_user_id)
+        #openid_user_id = ':' + openid_username.user_id()  #1111
+        openid_username = openid_username.user_id() + ':' + openid_username.email()
+        #openid_username = openid_username.email().replace('@', openid_user_id)
         logging.info('%s logged in.' % openid_username)
         logout_link = users.create_logout_url(self.request.path)
         return {openid_username:logout_link}
 
     elif facebook_user:
-        facebook_user = facebook_user.name + ':' + facebook_user.id + '@facebook'
+        facebook_user = facebook_user.id + ':' + facebook_user.name + '@facebook'
         logging.info("%s logged in." % facebook_user)
         logout_link = '/oauth/facebook_logout'
         return {facebook_user:logout_link}

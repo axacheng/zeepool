@@ -118,6 +118,28 @@ $(function(){
         $.each(server_return, function(key) {
         	//alert(server_return[key].key)
           $('#result').append(
+            '<tr>'+
+            	'<td></td>'+
+            	'<td class="search_result">'+
+                  '<div class="show_line">字: '  + server_return[key].Word + '    ' +
+                  '<span>'+
+                      '<b><a name="like_count">' + server_return[key].Like +  '</a></b>  讚,' +
+                      '<b><a name="dislike_count">' + server_return[key].Dislike + '</a></b> 不喜歡 ' +
+                      '<a name="like" class="pollword" href="#" id=' + server_return[key].key + '>Like</a>  ' +
+                      '<a name="dislike" class="pollword" href="#" id=' + server_return[key].key + '>Dislike</a>'+
+                  '</span>' +
+                  '</div>'+
+                  '<div class="show_line">解釋: ' + server_return[key].Define +'</div>'+
+                  '<div class="show_line">例句: ' + server_return[key].Example +'</div>'+
+ 			      '<div class="show_line">建立者: ' + server_return[key].Creator +'</div>'+
+ 			      '<div>'+
+ 	   			     '<span>'+ '建立時間: '+ server_return[key].Created + '</span>'+
+ 	   			    '<a href="http://www.facebook.com/sharer.php" name="fb_share" type="button_count">' + ' 分享到Facebook' + '</a>' +
+ 	              '</div>'+
+            	'</td>'+
+            '</tr>'
+ 
+        		  /*
              '<div class="search_result">'+
                '<p class="show_line">字: '  + server_return[key].Word + '    ' +
                '<span>'+
@@ -132,8 +154,9 @@ $(function(){
 			   '<p class="show_line">建立者: ' + server_return[key].Creator +'</p>'+
 			   //'建立時間: '+ server_return[key].Updated['ctime'] +
 			   '<a href="http://www.facebook.com/sharer.php" name="fb_share" type="button_count">' + ' 分享到Facebook' + '</a>' +
-             '</div>' 
-          )
+             '</div>'
+             */ 
+          ) // append end
         })//each end
         }, //sucess end
         }) // $.ajax end
@@ -149,4 +172,4 @@ $(function(){
 
 		}//source
 	}); //.autocomplete
-}); // search function end
+}); // search function end<'
