@@ -95,7 +95,7 @@ $(function(){
     minLength: 1,
 		source: function(inputString, server_return){
         $.ajax({
-          url: "/search?",
+          url: "/search/?",
           type: "GET",
           data: inputString,
           dataType:"json",
@@ -138,31 +138,11 @@ $(function(){
  	              '</div>'+
             	'</td>'+
             '</tr>'
- 
-        		  /*
-             '<div class="search_result">'+
-               '<p class="show_line">字: '  + server_return[key].Word + '    ' +
-               '<span>'+
-                 '<b><a name="like_count">' + server_return[key].Like +  '</a></b>  讚,' +
-                 '<b><a name="dislike_count">' + server_return[key].Dislike + '</a></b> 不喜歡 ' +
-                 '<a name="like" class="pollword" href="#" id=' + server_return[key].key + '>Like</a>  ' +
-                 '<a name="dislike" class="pollword" href="#" id=' + server_return[key].key + '>Dislike</a>'+
-               '</span>' +
-               '</p>'+
-               '<p class="show_line">解釋: ' + server_return[key].Define +'</p>'+
-               '<p class="show_line">例句: ' + server_return[key].Example +'</p>'+
-			   '<p class="show_line">建立者: ' + server_return[key].Creator +'</p>'+
-			   //'建立時間: '+ server_return[key].Updated['ctime'] +
-			   '<a href="http://www.facebook.com/sharer.php" name="fb_share" type="button_count">' + ' 分享到Facebook' + '</a>' +
-             '</div>'
-             */ 
           ) // append end
         })//each end
         }, //sucess end
         }) // $.ajax end
 
-      //  
-        
         
         
       // Clean up/Remove result after search is completed.

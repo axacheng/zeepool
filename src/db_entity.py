@@ -24,15 +24,11 @@ class CounterLikeWord(db.Model):
 class CounterDislikeWord(db.Model):
     name  = db.StringProperty(required=True)
     value = db.IntegerProperty(required=True, default=0)
-    
 
-class Comment(db.Model):
-    Word = db.ReferenceProperty(Words, collection_name='comment')
-    User = db.StringProperty(required=True)
-    Define = db.TextProperty()
-    Example = db.TextProperty()
-    Eastablish = db.DateTimeProperty(auto_now_add=True)
+class SearchPagingCounter(db.Model):
+    name  = db.StringProperty(required=True)
+    value = db.IntegerProperty(required=True, default=0)
+        
 
-    
 if __name__ == '__main__':
     pass

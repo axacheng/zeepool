@@ -10,6 +10,7 @@ import db_entity
 import datetime
 import facebookoauth as foauth
 import logging
+import operator
 import os
 import random
 import weibo_oauth_v2
@@ -21,7 +22,9 @@ from google.appengine.ext import webapp
 from google.appengine.ext.webapp import template
 from google.appengine.ext.webapp.util import login_required
 from google.appengine.ext.webapp.util import run_wsgi_app
-            
+    
+    
+MAX_SEARCH_RESULT_PER_PAGE = 3
     
 class Add(webapp.RequestHandler):
     @login_required
@@ -47,6 +50,11 @@ class Add(webapp.RequestHandler):
                 create_entity.put()
                 response = {'status':'success', 'message':'存檔成功了'}
                 logging.info('%s added new word: %s', username, word)
+                
+                # SearchPagingCounter would increment by one after new word added.
+                SearchCounter(action='add_count')
+                
+                
                 # using following way can convert chinese unicode to utf8
                 #http://deron.meranda.us/python/comparing_json_modules/unicode
                 json_ustr = simplejson.dumps(response, ensure_ascii=False)
@@ -244,7 +252,7 @@ def PollCounter(pollword_choose, pollword_key, display_for_search=True):
           counter = db_entity.CounterLikeWord(key_name=shard_name, name=pollword_key)
         
         counter.value += 1
-        counter.put() 
+        counter.put()
 
       elif pollword_choose == 'dislike':  # dislike
         counter = db_entity.CounterDislikeWord.get_by_key_name(shard_name)
@@ -268,7 +276,7 @@ class PollWord(webapp.RequestHandler):
 
 class Search(webapp.RequestHandler):
     @basicAuth
-    def get(self):
+    def get(self, page):
         """ Search result handler.
         
         Use request.get('term') to fetch <input id="search_input" name="term" > 
@@ -295,12 +303,22 @@ class Search(webapp.RequestHandler):
                       to merge multiple dicts.
                 
         """
+        if len(page):
+            page = int(page)
+        else:
+            page = 1
+        
+        total_page = SearchCounter(action='get_count')    
+            
+            
         all_word = []
         search_word = self.request.get('term')
         query = db_entity.Words.all()
         query.filter("Word >=", unicode(search_word))
         query.filter("Word <=", unicode(search_word) + u'\ufffd')
-        result = query.fetch(50, 0)
+        result = query.fetch(500, 0)
+        #result = query.fetch(MAX_SEARCH_RESULT_PER_PAGE,
+        #                     (page - 1) * MAX_SEARCH_RESULT_PER_PAGE)
         
         if result:  
           for p in result:
@@ -316,8 +334,13 @@ class Search(webapp.RequestHandler):
             fetched_word['Created'] = p.Created.strftime('%Y-%m-%d')
             fetched_word['Like'] = word_count['total_like_count']
             fetched_word['Dislike'] = word_count['total_dislike_count']
+            fetched_word['total_page_list'] = range(1, total_page + 1)
             all_word.append(fetched_word)
-
+            
+          sorted_by_like_all_word = sorted(all_word, reverse=True,
+                                           key=operator.itemgetter('Like'))
+          all_word = PagingSearchResult(page, sorted_by_like_all_word)
+          
           logging.info('Searched word is: %s', p.Word )                  
           json_result = simplejson.dumps(all_word)
           self.response.headers.add_header("Content-Type",
@@ -329,6 +352,37 @@ class Search(webapp.RequestHandler):
           self.response.headers.add_header("Content-Type",
                                            "application/json charset='utf-8'")
           self.response.out.write(json_result)
+
+
+def PagingSearchResult(page, sorted_by_like_all_word):
+    first_word = MAX_SEARCH_RESULT_PER_PAGE * (page - 1)
+    last_word  = MAX_SEARCH_RESULT_PER_PAGE * page
+    return sorted_by_like_all_word[first_word:last_word]
+    
+
+
+def SearchCounter(action):
+    if action == 'add_count':
+        shard_name = 'search_paging_shard_%s' % str(random.randint(1, 10))
+        counter = db_entity.SearchPagingCounter.get_by_key_name(shard_name)
+        if counter is None:
+            counter = db_entity.SearchPagingCounter(key_name=shard_name, name='search_paging')
+        counter.value += 1
+        counter.put() 
+
+    elif action == 'get_count':
+        total = 0
+        counters = db_entity.SearchPagingCounter.all().filter('name', 'search_paging')
+        
+        if counters is None:
+            total_page = 1
+        else:
+            for counter in counters:
+                total += counter.value
+            total_page = total / MAX_SEARCH_RESULT_PER_PAGE  # (TODO) need to use constents instead.
+            if total % MAX_SEARCH_RESULT_PER_PAGE > 0:
+                total_page = total_page + 1
+            return total_page
 
 
 def UserLoginHandler(self):
@@ -435,7 +489,7 @@ application = webapp.WSGIApplication(
                                       ('/oauth/weibo_logout', weibo_oauth_v2.LogoutHandler),
                                       ('/auth_handler', AuthHandler),
                                       ('/pollword/(.*)/(.*)', PollWord),
-                                      ('/search', Search)],
+                                      ('/search/(\d*)', Search)],
                                      debug=True)
 
 def main():
