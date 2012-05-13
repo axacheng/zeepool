@@ -307,18 +307,15 @@ class Search(webapp.RequestHandler):
             page = int(page)
         else:
             page = 1
-        
-        total_page = SearchCounter(action='get_count')    
-            
-            
+                   
         all_word = []
         search_word = self.request.get('term')
         query = db_entity.Words.all()
         query.filter("Word >=", unicode(search_word))
         query.filter("Word <=", unicode(search_word) + u'\ufffd')
         result = query.fetch(500, 0)
-        #result = query.fetch(MAX_SEARCH_RESULT_PER_PAGE,
-        #                     (page - 1) * MAX_SEARCH_RESULT_PER_PAGE)
+        total_page = query.count()
+        logging.info('fffffffffffff %s', total_page)
         
         if result:  
           for p in result:
@@ -334,7 +331,7 @@ class Search(webapp.RequestHandler):
             fetched_word['Created'] = p.Created.strftime('%Y-%m-%d')
             fetched_word['Like'] = word_count['total_like_count']
             fetched_word['Dislike'] = word_count['total_dislike_count']
-            fetched_word['total_page_list'] = range(1, total_page + 1)
+            fetched_word['Total_page'] = total_page
             all_word.append(fetched_word)
             
           sorted_by_like_all_word = sorted(all_word, reverse=True,
@@ -355,6 +352,9 @@ class Search(webapp.RequestHandler):
 
 
 def PagingSearchResult(page, sorted_by_like_all_word):
+    """ Build a python list slice to indent 
+    
+    """
     first_word = MAX_SEARCH_RESULT_PER_PAGE * (page - 1)
     last_word  = MAX_SEARCH_RESULT_PER_PAGE * page
     return sorted_by_like_all_word[first_word:last_word]
@@ -369,7 +369,7 @@ def SearchCounter(action):
             counter = db_entity.SearchPagingCounter(key_name=shard_name, name='search_paging')
         counter.value += 1
         counter.put() 
-
+"""
     elif action == 'get_count':
         total = 0
         counters = db_entity.SearchPagingCounter.all().filter('name', 'search_paging')
@@ -383,7 +383,7 @@ def SearchCounter(action):
             if total % MAX_SEARCH_RESULT_PER_PAGE > 0:
                 total_page = total_page + 1
             return total_page
-
+"""
 
 def UserLoginHandler(self):
     """ This method offers username and logout_link to MainPage().

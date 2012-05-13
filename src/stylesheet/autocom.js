@@ -109,9 +109,18 @@ $(function(){
           }
           else {
             var key = server_return.length - 1 // decrement 1, because the first element starts as "Zero"
-            var total_words = server_return.length
+            //var total_words = server_return.length
             var searched_word = $('input#search_input').val()
-            $('.show_result_ok').html('<p class="show_result_ok">我們有 ' + total_words + ' 個關於 ' +  searched_word + '的解釋').show()
+            //$('.show_result_ok').html('<p class="show_result_ok">我們有 ' + total_words + ' 個關於 ' +  searched_word + '的解釋').show()
+            var total_word = server_return[key].Total_page //11
+            var max_per_page = 3 // 總數 11 每3個字一個連結 所以一共會有 4
+            var total_page = Math.floor(total_word / max_per_page) + 1 //4
+                        
+            for (i=1; i< total_page; i++){
+            	$('#result').append("<span>" + "<a style='margin-left:20px;' href=/search/" + i + ">" +  i  +  "</a></span>")
+
+            }
+            	
           }
      
         // Loopup json result from server_return variable then compile them into html format.
