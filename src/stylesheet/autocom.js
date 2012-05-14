@@ -98,67 +98,29 @@ $(function(){
           url: "/search/?",
           type: "GET",
           data: inputString,
-          dataType:"json",
-          contentType: "application/json; charset=utf-8", 
-          success: function(server_return){
-          // If server is no result back to client then show error mesg.
-          if (server_return.length == 0){
-            $('.show_result_ok').hide()
-            $('.show_result_error').fadeIn().delay(2000).fadeOut()
-            return false
-          }
-          else {
-            var key = server_return.length - 1 // decrement 1, because the first element starts as "Zero"
-            //var total_words = server_return.length
-            var searched_word = $('input#search_input').val()
-            //$('.show_result_ok').html('<p class="show_result_ok">我們有 ' + total_words + ' 個關於 ' +  searched_word + '的解釋').show()
-            var total_word = server_return[key].Total_page //11
-            var max_per_page = 3 // 總數 11 每3個字一個連結 所以一共會有 4
-            var total_page = Math.floor(total_word / max_per_page) + 1 //4
-                        
-            for (i=1; i< total_page; i++){
-            	$('#result').append("<span>" + "<a style='margin-left:20px;' href=/search/" + i + ">" +  i  +  "</a></span>")
-
-            }
-            	
-          }
-     
-        // Loopup json result from server_return variable then compile them into html format.
-        $.each(server_return, function(key) {
-        	//alert(server_return[key].key)
-          $('#result').append(
-            '<tr>'+
-            	'<td></td>'+
-            	'<td class="search_result">'+
-                  '<div class="show_line">字: '  + server_return[key].Word + '    ' +
-                  '<span>'+
-                      '<b><a name="like_count">' + server_return[key].Like +  '</a></b>  讚,' +
-                      '<b><a name="dislike_count">' + server_return[key].Dislike + '</a></b> 不喜歡 ' +
-                      '<a name="like" class="pollword" href="#" id=' + server_return[key].key + '>Like</a>  ' +
-                      '<a name="dislike" class="pollword" href="#" id=' + server_return[key].key + '>Dislike</a>'+
-                  '</span>' +
-                  '</div>'+
-                  '<div class="show_line">解釋: ' + server_return[key].Define +'</div>'+
-                  '<div class="show_line">例句: ' + server_return[key].Example +'</div>'+
- 			      '<div class="show_line">建立者: ' + server_return[key].Creator +'</div>'+
- 			      '<div>'+
- 	   			     '<span>'+ '建立時間: '+ server_return[key].Created + '</span>'+
- 	   			    '<a href="http://www.facebook.com/sharer.php" name="fb_share" type="button_count">' + ' 分享到Facebook' + '</a>' +
- 	              '</div>'+
-            	'</td>'+
-            '</tr>'
-          ) // append end
-        })//each end
-        }, //sucess end
+          dataType:"html",
+          success: function(server_return) {
+              // If server is no result back to client then show error mesg.
+              if (server_return.length <= 2){
+                $('.show_result_ok').hide()
+                $('.show_result_error').fadeIn().delay(2000).fadeOut()
+                return false
+              }
+              // Show content of search_result.html to #result div
+        	  $('#result').append(server_return)
+        	  
+        	  // Add next page link
+        	  for (i=1; i< total_page; i++){
+        	      $('#navigation').append("<a style='margin-left:20px;' href=/search/" + i + ">" +  i  +  "</a>")
+        	  }
+          }, //sucess end
         }) // $.ajax end
 
-        
-        
-      // Clean up/Remove result after search is completed.
-      // CANNOT REMOVE OUT!
-      $('.show_line').empty().remove();
-      $('.search_result').empty().remove();   
+        // Clean up/Remove result after search is completed.
+        // CANNOT REMOVE OUT!
+        $('.show_line').empty().remove();
+        $('.search_result').empty().remove();   
 
-		}//source
-	}); //.autocomplete
-}); // search function end<'
+  		}//source
+  	}); //.autocomplete
+  }); // search function end

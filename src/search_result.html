@@ -1,0 +1,47 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+"http://www.w3.org/TR/html4/loose.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+	<link type="text/css" rel="stylesheet" href="/stylesheet/main.css" >
+	<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
+	<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.8.6/jquery-ui.min.js"></script>  
+  <script type="text/javascript" src="http://localhost:8080/stylesheet/add.js"></script>
+  <script type="text/javascript" src="http://localhost:8080/stylesheet/autocom.js"></script>
+  <script type="text/javascript">
+	  var max_per_page = 3 
+		var total_word = {{ total_words.total_words }}
+		var total_page = Math.floor( total_word / max_per_page) + 1
+  </script>   
+</head>
+
+
+<body>
+<div class="search_result">
+	{% if search_results %}	  
+		{% for search_result in search_results %}
+		  <tr>
+        <td>
+          <div class="show_line">字: {{ search_result.Word }}
+          <span>
+              <b><a name="like_count"> {{ search_result.Like }} </a></b>  讚,
+              <b><a name="dislike_count"> {{ search_result.Dislike }} </a></b> 不喜歡
+              <a name="like" class="pollword" href="#" id=  {{ search_result.key }}>Like</a>
+              <a name="dislike" class="pollword" href="#" id=  {{ search_result.key }}>Dislike</a>
+          </span>
+          </div>
+          <div class="show_line">解釋: {{ search_result.Define }} </div>
+          <div class="show_line">例句: {{ search_result.Example }} </div>
+          <div class="show_line">建立者: {{ search_result.Creator }} </div>
+          <div>
+            <span> 建立時間: {{ search_result.Created }} </span>
+            <a href="http://www.facebook.com/sharer.php" name="fb_share" type="button_count">   分享到Facebook  </a>   
+          </div>
+        </td>
+      </tr>            
+	  {% endfor %}	  
+	{% endif %}	
+</div>
+</body>
+</html>
+

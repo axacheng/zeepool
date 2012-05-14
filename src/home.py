@@ -314,8 +314,7 @@ class Search(webapp.RequestHandler):
         query.filter("Word >=", unicode(search_word))
         query.filter("Word <=", unicode(search_word) + u'\ufffd')
         result = query.fetch(500, 0)
-        total_page = query.count()
-        logging.info('fffffffffffff %s', total_page)
+        total_searched_words = query.count()  # (TODO) get rid of count() it's dangerous!
         
         if result:  
           for p in result:
@@ -331,18 +330,27 @@ class Search(webapp.RequestHandler):
             fetched_word['Created'] = p.Created.strftime('%Y-%m-%d')
             fetched_word['Like'] = word_count['total_like_count']
             fetched_word['Dislike'] = word_count['total_dislike_count']
-            fetched_word['Total_page'] = total_page
             all_word.append(fetched_word)
             
           sorted_by_like_all_word = sorted(all_word, reverse=True,
                                            key=operator.itemgetter('Like'))
           all_word = PagingSearchResult(page, sorted_by_like_all_word)
           
-          logging.info('Searched word is: %s', p.Word )                  
+          
+          logging.info('Searched word is: %s', p.Word )  
+          logging.info('server return: %s', all_word)                
+          """
           json_result = simplejson.dumps(all_word)
           self.response.headers.add_header("Content-Type",
                                            "application/json charset='utf-8'")
           self.response.out.write(json_result)
+          """
+          total_words = {'total_words':total_searched_words}
+          path = os.path.join(os.path.dirname(__file__), 'search_result.html')
+          self.response.out.write(template.render(path, {
+                                                         'search_results':all_word,
+                                                         'total_words':total_words}))
+          
         else:
           logging.info('zero result')
           json_result = simplejson.dumps(result)
