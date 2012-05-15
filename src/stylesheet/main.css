@@ -46,8 +46,11 @@ body{
 }
 
 .search_result{
-	width: 50%;
-	height: 50%;
+ width: 700px;
+  margin-left: auto ;
+  margin-right: auto ;
+ height: 600px;
+ overflow:auto;
 }
 
 #result{

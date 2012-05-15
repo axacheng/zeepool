@@ -14,4 +14,11 @@
 	<natures>
 		<nature>org.python.pydev.pythonNature</nature>
 	</natures>
+	<linkedResources>
+		<link>
+			<name>src/stylesheet/jquery.infinitescroll.min.js</name>
+			<type>1</type>
+			<location>/Users/axa/Downloads/paulirish-infinite-scroll-0fe6037/jquery.infinitescroll.min.js</location>
+		</link>
+	</linkedResources>
 </projectDescription>

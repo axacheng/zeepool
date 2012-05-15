@@ -101,17 +101,31 @@ $(function(){
           dataType:"html",
           success: function(server_return) {
               // If server is no result back to client then show error mesg.
+        	  //alert(server_return.length)
               if (server_return.length <= 2){
                 $('.show_result_ok').hide()
-                $('.show_result_error').fadeIn().delay(2000).fadeOut()
+                $('.show_result_error').fadeIn().delay(1000).fadeOut()
                 return false
               }
               // Show content of search_result.html to #result div
-        	  $('#result').append(server_return)
+        	  $('#result').html(server_return)
+        	  
+        	  // Infinite Scroll
+        	  $('.search_result').infinitescroll({
+        		  nextSelector: "div.navigation a:first",
+        		  navSelector: "div.navigation",
+        		  itemSelector: "div.post",
+        		  debug: true,
+        		  localMode: true,
+        		  loadingText  : "Loading new posts...",
+        		  animate      : true,  
+        	  }); // .search_result for infinitescroll end
+        	  
         	  
         	  // Add next page link
         	  for (i=1; i< total_page; i++){
-        	      $('#navigation').append("<a style='margin-left:20px;' href=/search/" + i + ">" +  i  +  "</a>")
+ //      	      $('.navigation').append("<a href=/search/" + i + ">" +  "next page?" +  "</a>")
+        	      $('.navigation').append("<a href=/search/2?term=fa> next page </a>")        	    		  
         	  }
           }, //sucess end
         }) // $.ajax end
@@ -119,8 +133,9 @@ $(function(){
         // Clean up/Remove result after search is completed.
         // CANNOT REMOVE OUT!
         $('.show_line').empty().remove();
-        $('.search_result').empty().remove();   
+        $('.search_result').empty().remove();
 
   		}//source
   	}); //.autocomplete
+	
   }); // search function end

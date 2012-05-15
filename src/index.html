@@ -10,6 +10,7 @@
 	<script type="text/javascript" src="stylesheet/edit.js"></script>
   <script type="text/javascript" src="stylesheet/jeditable.js"></script>
   <script type="text/javascript" src="stylesheet/jeditable.charcounter.js"></script>
+  <script type="text/javascript" src="stylesheet/jquery.infinitescroll.min.js"></script>
 	<script type="text/javascript" src="stylesheet/login.js"></script>
 </head>
 <body>
@@ -30,9 +31,10 @@
 
 	<div id="result">
 		<p class="show_result_error">找不到東西...</p>
-		<p class="show_result_ok"></p>	
+		<p class="show_result_ok"></p>
 	</div>
-	<div id="navigation"></div>
+	
+	<div class="navigation"></div>
 
 	<div id="admin">
 	{% if login_status %}

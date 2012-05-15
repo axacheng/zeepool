@@ -4,9 +4,6 @@
 <head>
 	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 	<link type="text/css" rel="stylesheet" href="/stylesheet/main.css" >
-	<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
-	<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.8.6/jquery-ui.min.js"></script>  
-  <script type="text/javascript" src="http://localhost:8080/stylesheet/add.js"></script>
   <script type="text/javascript" src="http://localhost:8080/stylesheet/autocom.js"></script>
   <script type="text/javascript">
 	  var max_per_page = 3 
@@ -15,11 +12,14 @@
   </script>   
 </head>
 
-
 <body>
+
+<p class="show_result_error">找不到東西...</p>
+<p class="show_result_ok"></p>	
 <div class="search_result">
 	{% if search_results %}	  
 		{% for search_result in search_results %}
+			<div class="post">
 		  <tr>
         <td>
           <div class="show_line">字: {{ search_result.Word }}
@@ -38,10 +38,11 @@
             <a href="http://www.facebook.com/sharer.php" name="fb_share" type="button_count">   分享到Facebook  </a>   
           </div>
         </td>
-      </tr>            
+      </tr>
+   </div><!-- post end-->
 	  {% endfor %}	  
 	{% endif %}	
 </div>
-</body>
+</body> <!-- search_result end -->
 </html>
 
