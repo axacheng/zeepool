@@ -7,22 +7,20 @@
  *    <script src="stylesheet/jeditable.charcounter.js">
  */
 $(document).ready(function(){
-  //Hove effect when mouseover on ‰øÆÊîπ
-	$('.anchorLink').hover(
-	   function(e){
-		   $('#edit').css("display", "block"); //show up #edit div when mouse cover
-	   },
-	   function(){
-	 	   $('#edit').css("display", "none"); //hide #edit div when mouse leave
-	   }
-	);
+	/*
+	 * I emulated www.teamviget.com 3D rotate display by using css3 -webkit-transfrom
+	 * rotate3d method to switch around #home div and #edit div.
+	 */
 	
-	// Unbind hover,mouserenter,mouseleave.
-	// Otherwise,User can't move away mouse from .anchorLink(aka:‰øÆÊîπÁöÑlink)
-	$('.anchorLink').click(function(){
-	  $(".anchorLink").unbind("hover").unbind('mouseenter').unbind('mouseleave');
-	}); //http://api.jquery.com/hover/ see discussion from Zlatev replied to Thomas Svensson 
-	
+    $("#edit_toggle").click(function(event){
+		$("#home").css({"opacity":"0", "left":"-100%", "-webkit-transform":"rotate3d(0, 0, 0, -10deg)", "z-index":"2"});
+		$("#edit").css({"opacity":"1", "left":"0px", "-webkit-transform":"rotate3d(0, 0, 0, 0deg)", "z-index":"10"});	
+    }); // #edit_toggle.click end
+
+    $("#edit_finish").click(function(event){
+		$("#edit").css({"opacity":"0", "left":"-100%", "-webkit-transform":"rotate3d(0, 0, 0, -10deg)", "z-index":"2"});
+		$("#home").css({"opacity":"1", "left":"0px", "-webkit-transform":"rotate3d(0, 0, 0, 0deg)", "z-index":"10"});	
+    }); // #edit_finish.click end    
 	
 	$.editable.addInputType('charcounter', {
 	    element : function(settings, original) {

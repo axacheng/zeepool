@@ -4,16 +4,39 @@ body{
   padding: 0;
   margin: 0;
   border: 0;
+  background: white;
 }
+
 
 #home{
 	width: 100%;
 	height: 100%;
-	left:0%;
-	top:40px;
-  background-color: #0067C8; /* #882811 */
-	color: Black;	
+	top: 0;
+	opacity: 1; 
+	left: 0px;
+	position: absolute;
+	-webkit-transition: all 1.5s ease-in-out;
+	-webkit-transform: rotate3d(0, 0, 0, 0deg);
+	z-index: 10;
+	border: 1px solid;
+  border-color:#00FF00;
 }
+
+
+#edit{
+	width: 100%;
+	height: 100%;
+	top: 0;
+	opacity: 0;
+	left: 100%;
+	position: absolute;
+	-webkit-transition: all 1.5s ease-in-out;
+	-webkit-transform: rotate3d(0, 0, 0, 10deg);
+	z-index: 2;
+  border: 1px solid;
+  border-color:#FFAA00;
+}
+
 
 #banner{
   width:100%;
@@ -24,6 +47,7 @@ body{
   top:0%;
 }
 
+
 #search{
   width:70%;
   height:10%;
@@ -33,6 +57,7 @@ body{
   border: 1px solid;
   border-color:#FF0000;
 }
+
 
 #search_input{
 	width:250px;
@@ -47,32 +72,32 @@ body{
 
 
 .search_result{
- width: 1000px;
-  margin-left: auto ;
-  margin-right: auto ;
- height: 630px;
- overflow:auto;
-   border: 1px solid;
+  width: 1000px;
+  height: 630px;
+  overflow:auto;
+  border: 1px solid;
   border-color:#FFAA00;
 }
 
-.post { width:220px;margin:10px;float: left; } 
 
-/*
-.post{
-	width:220px;
-	height: auto;
-	padding:15px 15px 0;
-	background-color: white;
-	-webkit-box-shadow:0 1px 3px rgba(34,25,25,0.4);
+.post {
+  width: 300px;
+  margin: 10px;
+  float: left;
+  -webkit-box-shadow:0 1px 3px rgba(34,25,25,0.4);
 }
-*/
+
 
 .word_image{
-	width:220px;
+	width:280px;
 	height: 100px;
 	padding: 5px;
 	background-color: yellow;
+}
+
+
+.moveme{
+  -webkit-transition: opacity 0.5s ease-in-out;
 }
 
 
@@ -84,6 +109,7 @@ body{
   top: 20%;
 }
 
+
 #admin{
   width:30%;
   height:25%;
@@ -91,6 +117,7 @@ body{
   right:0%;
   top:0%;
 }
+
 
 #top10{
   width:30%;
@@ -100,6 +127,7 @@ body{
   top:25%;
 }
 
+
 #advert{
   width:30%;
   height:10%;
@@ -108,24 +136,11 @@ body{
   bottom:0%;
 }
 
+
 #add_main{
 	display:none;
 }
 
-
-#edit{
-	height:100%;
-	display:none;
-  position:relative;
-  background-color: #D4DCF7;
-  background-position: 0% 0%;
-    background-position-x: 0%;
-    background-position-y: 0%;
-  background-repeat: repeat-x;
-    background-repeat-x: repeat;
-    background-repeat-y: no-repeat;
-  color: Black;
-}
 
 #edit_main{
   border-style:dashed;
@@ -136,6 +151,7 @@ body{
   top:1%;
 }
 
+
 ul.thumb {
 float: left;
 list-style: none;
@@ -143,6 +159,7 @@ margin: 0px;
 padding: 10px;
 width: 720px;
 }
+
 
 ul.thumb li {
 float: left;
@@ -163,6 +180,7 @@ width: 200px;
   top:1%;
 }
 
+
 #user_report{
 	border-style:dashed;
   width:28%;
@@ -171,6 +189,3 @@ width: 200px;
   right:0%;
   bottom:0%;
 }
-
-
-

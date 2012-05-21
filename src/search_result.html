@@ -5,6 +5,7 @@
 	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 	<link type="text/css" rel="stylesheet" href="/stylesheet/main.css" >
   <script type="text/javascript" src="http://localhost:8080/stylesheet/autocom.js"></script>
+  
   <script type="text/javascript">
 	  var max_per_page = 3 
 		var total_word = {{ total_words.total_words }}
@@ -34,7 +35,7 @@
             <div class="show_line">建立者: {{ search_result.Creator }} </div>
             <div>
               <span> 建立時間: {{ search_result.Created }} </span>
-              <a href="http://www.facebook.com/sharer.php" name="fb_share" type="button_count">   分享到Facebook  </a>   
+              <a href="http://localhost/search/?term={{ search_result.Word }}&id={{ search_result.key }}" name="fb_share" type="button_count">__分享__</a>   
             </div>
             <hr/>
    </div><!-- post end-->

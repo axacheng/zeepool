@@ -1,6 +1,6 @@
 <html>
 <head>
-	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">  
 	<link type="text/css" rel="stylesheet" href="/stylesheet/main.css" >
 	<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
 	<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.8.6/jquery-ui.min.js"></script>  
@@ -15,14 +15,13 @@
   <script type="text/javascript" src="stylesheet/jquery.masonry.min.js"></script>
 	<script type="text/javascript" src="stylesheet/login.js"></script>
 </head>
+
+
 <body>
-
-
-	<div id="banner">
-		Banner LOGO
-	</div>
-	<div id="home">
-
+<div id="home">
+		<div id="banner">
+			Banner LOGO
+		</div>
 	<div id="search">
 		<form action="/search?" id="search_form" method="GET">
 			<div>
@@ -70,10 +69,10 @@
     		<div id="submit_result"></div>
   		 </form> <!-- form action="/add" end-->
 	   </div> <!-- add_main -->
-	   
-     <!--[CANNOT REMOVE] The class=anchorLink is for anchor moving Can't be renamed or even removed-->
-		 <a class="anchorLink" id="edit_toggle" href="#myAnchor" ref="" >修改</a> &nbsp; &nbsp;
-	   <a href="{{ url_link }}"> {{ url_text }} </a>
+	  
+	  <a class="moveme" id="edit_toggle" href="#edit" ref="" >修改</a> &nbsp; &nbsp;
+	  <a href="{{ url_link }}"> {{ url_text }} </a>
+	
 	{% else %}
     <div class="login_auth"></div>		 
   {% endif %}
@@ -89,11 +88,9 @@
 </div> <!-- home -->
 
 {% if user_editable_word %}
-  <div id="edit">
-  	
+	<div id="edit">	
 		<div id="edit_main">
-  	  <a name="myAnchor" id="myAnchor"></a> <!--[CANNOT REMOVE] The target for div moving-->
-      <a id="edit_finish" href="/">返回首頁</a> &nbsp; &nbsp;
+      <a id="edit_finish" href="#home">返回首頁</a> &nbsp; &nbsp;
 			<ul class="thumb">
       {% for list_query in user_editable_word %}
         {{ list_query }}
@@ -118,6 +115,5 @@
 		</div>
 	</div> <!-- edit -->
 {% endif %}
-
 </body>
 </html>

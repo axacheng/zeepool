@@ -338,13 +338,7 @@ class Search(webapp.RequestHandler):
           
           
           logging.info('Searched word is: %s', p.Word )  
-          logging.info('server return: %s', all_word)                
-          """
-          json_result = simplejson.dumps(all_word)
-          self.response.headers.add_header("Content-Type",
-                                           "application/json charset='utf-8'")
-          self.response.out.write(json_result)
-          """
+          logging.info('server return: %s', all_word)
           total_words = {'total_words':total_searched_words}
           path = os.path.join(os.path.dirname(__file__), 'search_result.html')
           self.response.out.write(template.render(path, {
@@ -486,7 +480,24 @@ def UserLoginHandler(self):
         logging.info('We cant find username, redirect to login page.')
         return {}
 
+        
+class GenerateFakeData(webapp.RequestHandler):
+    def get(self):
+        fake_word = {'milf1': ['define1', 'example1', 'tag1'],
+                     'milf2': ['define2', 'example2', 'tag2'],
+                     'milf3': ['define3', 'example3', 'tag3'],
+                     'milf4': ['define4', 'example4', 'tag4']}
+        
+        for i in fake_word.items():
+            ccc = db_entity.Words(Creator='185804764220139124118:test@example.com',
+                                  Word=i[0],
+                                  Define=i[1][0],
+                                  Example=i[1][1],)
+            ccc.put()
+        self.redirect('/')
 
+                
+                
 application = webapp.WSGIApplication(
                                      [('/', MainPage),
                                       ('/add', Add),
@@ -497,7 +508,9 @@ application = webapp.WSGIApplication(
                                       ('/oauth/weibo_logout', weibo_oauth_v2.LogoutHandler),
                                       ('/auth_handler', AuthHandler),
                                       ('/pollword/(.*)/(.*)', PollWord),
-                                      ('/search/(\d*)', Search)],
+                                      ('/search/(\d*)', Search),
+                                      ('/fake', GenerateFakeData)
+                                      ],
                                      debug=True)
 
 def main():
