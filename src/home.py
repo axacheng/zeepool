@@ -486,10 +486,17 @@ class GenerateFakeData(webapp.RequestHandler):
         fake_word = {'milf1': ['define1', 'example1', 'tag1'],
                      'milf2': ['define2', 'example2', 'tag2'],
                      'milf3': ['define3', 'example3', 'tag3'],
-                     'milf4': ['define4', 'example4', 'tag4']}
+                     'milf4': ['define4', 'example4', 'tag4'],
+                     'milf5': ['define5', 'example5', 'tag5'],
+                     'milf6': ['define6', 'example6', 'tag6'],
+                     'milf7': ['define7', 'example7', 'tag7'],
+                     'milf8': ['define8', 'example8', 'tag8'],
+                     'milf9': ['define9', 'example9', 'tag9'],
+                     'milf14': ['define14', 'example14', 'tag14']}                                         
+
         
         for i in fake_word.items():
-            ccc = db_entity.Words(Creator='185804764220139124118:test@example.com',
+            ccc = db_entity.Words(Creator='692733281:Axa Cheng@facebook',
                                   Word=i[0],
                                   Define=i[1][0],
                                   Example=i[1][1],)

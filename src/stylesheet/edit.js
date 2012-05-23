@@ -6,6 +6,9 @@
  *    <script src="stylesheet/jeditable.js">
  *    <script src="stylesheet/jeditable.charcounter.js">
  */
+
+
+		
 $(document).ready(function(){
 	/*
 	 * I emulated www.teamviget.com 3D rotate display by using css3 -webkit-transfrom
@@ -13,15 +16,40 @@ $(document).ready(function(){
 	 */
 	
     $("#edit_toggle").click(function(event){
+			  setTimeout(function(){
+					$("#home").css({"opacity":"0", "left":"-100%", "-webkit-transform":"rotate3d(0, 0, 0, -10deg)", "z-index":"2"});
+					$("#edit").css({"opacity":"1", "left":"0px", "-webkit-transform":"rotate3d(0, 0, 0, 0deg)", "z-index":"10"});
+					location.hash = location.hash.replace("#", "#!");
+			  }, 10);
+
+		  } // end click
+	  ); //end live
+
+	/*
+    $("#edit_toggle").click(function(event){
 		$("#home").css({"opacity":"0", "left":"-100%", "-webkit-transform":"rotate3d(0, 0, 0, -10deg)", "z-index":"2"});
-		$("#edit").css({"opacity":"1", "left":"0px", "-webkit-transform":"rotate3d(0, 0, 0, 0deg)", "z-index":"10"});	
+		$("#edit").css({"opacity":"1", "left":"0px", "-webkit-transform":"rotate3d(0, 0, 0, 0deg)", "z-index":"10"});
+    	var s = location.hash = "#!edit"
+    	console.log(s);
+    	
+		//var c = s.replace("#", "#!");
+
+		
+		//location.hash = location.hash.replace("#", "#!");
+		//console.log(location.hash);
     }); // #edit_toggle.click end
+    */
 
     $("#edit_finish").click(function(event){
-		$("#edit").css({"opacity":"0", "left":"-100%", "-webkit-transform":"rotate3d(0, 0, 0, -10deg)", "z-index":"2"});
-		$("#home").css({"opacity":"1", "left":"0px", "-webkit-transform":"rotate3d(0, 0, 0, 0deg)", "z-index":"10"});	
-    }); // #edit_finish.click end    
-	
+			  setTimeout(function(){
+					$("#edit").css({"opacity":"0", "left":"-100%", "-webkit-transform":"rotate3d(0, 0, 0, -10deg)", "z-index":"2"});
+					$("#home").css({"opacity":"1", "left":"0px", "-webkit-transform":"rotate3d(0, 0, 0, 0deg)", "z-index":"10"});
+					location.hash = location.hash.replace("#", "#!");
+			  }, 10);
+
+		  } // end click
+	  ); //end live	  
+
 	$.editable.addInputType('charcounter', {
 	    element : function(settings, original) {
 	        var textarea = $('<textarea />');

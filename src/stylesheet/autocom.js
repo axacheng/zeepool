@@ -133,6 +133,7 @@ $(function(){
 
   		}//source
   	}); //.autocomplete
+
 	
 	  // Infinite Scroll
 	  var $container = $('.search_result');
