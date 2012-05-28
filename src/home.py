@@ -187,6 +187,7 @@ class MainPage(webapp.RequestHandler):
     def get(self):
         username = "".join(UserLoginHandler(self).keys())
         logout_link = "".join(UserLoginHandler(self).values())
+        #username = "692733281:Axa Cheng@facebook"
         
         if username:
             url_link = logout_link
@@ -217,7 +218,7 @@ class MainPage(webapp.RequestHandler):
         path = os.path.join(os.path.dirname(__file__), 'index.html')
         self.response.out.write(template.render(path, template_dict))
 
-def PollCounter(pollword_choose, pollword_key, display_for_search=True):
+def PollCounter(pollword_choose, pollword_key, username, display_for_search=True):
   
     if display_for_search:  # Only display total count result for Search result.
       total_like = 0
@@ -246,20 +247,26 @@ def PollCounter(pollword_choose, pollword_key, display_for_search=True):
       That's why after counter.put() , we won't have return/json return to caller.
       """
       shard_name = '%s_%s' % (pollword_key, str(random.randint(1, 4)))
+      
       if pollword_choose == 'like':
         counter = db_entity.CounterLikeWord.get_by_key_name(shard_name)
         if counter is None:
-          counter = db_entity.CounterLikeWord(key_name=shard_name, name=pollword_key)
-        
+          counter = db_entity.CounterLikeWord(key_name=shard_name,
+                                              name=pollword_key,
+                                              Creator=username) 
         counter.value += 1
+        counter.Creator = username
+        logging.info("aaaabbbbb %s", username)
         counter.put()
 
       elif pollword_choose == 'dislike':  # dislike
         counter = db_entity.CounterDislikeWord.get_by_key_name(shard_name)
         if counter is None:
-          counter = db_entity.CounterDislikeWord(key_name=shard_name, name=pollword_key)
-
+          counter = db_entity.CounterDislikeWord(key_name=shard_name,
+                                                 name=pollword_key,
+                                                 Creator=username)
         counter.value += 1
+        counter.Creator = username
         counter.put() 
 
       else:
@@ -267,11 +274,10 @@ def PollCounter(pollword_choose, pollword_key, display_for_search=True):
       
 
 class PollWord(webapp.RequestHandler):
-  """
-  pollword_choose, like 
-  """
-  def get(self, pollword_choose, pollword_key):
-    PollCounter(pollword_choose, pollword_key, display_for_search=False)
+    """ pollword_choose, like or dislike  (TODO) """
+    def get(self, pollword_choose, pollword_key):
+        username = "".join(UserLoginHandler(self).keys())
+        PollCounter(pollword_choose, pollword_key, username, display_for_search=False)
     
 
 class Search(webapp.RequestHandler):
@@ -310,7 +316,10 @@ class Search(webapp.RequestHandler):
                    
         all_word = []
         search_word = self.request.get('term')
+        search_word = 'milf'
         query = db_entity.Words.all()
+        
+        
         query.filter("Word >=", unicode(search_word))
         query.filter("Word <=", unicode(search_word) + u'\ufffd')
         result = query.fetch(500, 0)
@@ -318,7 +327,7 @@ class Search(webapp.RequestHandler):
         
         if result:  
           for p in result:
-            word_count = PollCounter(None, str(p.key()), display_for_search=True)
+            word_count = PollCounter(None, str(p.key()), None, display_for_search=True)
             logging.info('This is word count %s', word_count)
             fetched_word = {}
             fetched_word['key'] = str(p.key())

@@ -83,9 +83,8 @@ $(document).ready(function(){
 			}); //.ajax
 		}  //poll .click end
 	}) //live end
-	
-	
 }); // document end
+
 
 /* Search function 
  * jqueryUI autocomplete cannot included in $(document).ready!

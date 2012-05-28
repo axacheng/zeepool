@@ -17,11 +17,13 @@ class Words(db.Model):
 
 
 class CounterLikeWord(db.Model):
+    Creator = db.StringProperty(required=True)
     name  = db.StringProperty(required=True)
     value = db.IntegerProperty(required=True, default=0)
 
 
 class CounterDislikeWord(db.Model):
+    Creator = db.StringProperty(required=True)
     name  = db.StringProperty(required=True)
     value = db.IntegerProperty(required=True, default=0)
 
