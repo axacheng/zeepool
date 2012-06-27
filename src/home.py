@@ -242,36 +242,38 @@ def PollCounter(pollword_choose, pollword_key, username, display_for_search=True
       """ Add users like or dislike on Word.
       It'd be called by 'PollWord' handler that requested by /autocom.js 
       Poll system. find '$(".pollword").live' on autocom.js
-      We probably wont fetch db again for lighting db loading.
+      We probably wont to fetch db again for lighting db loading.
       And, we would use jQuery to make 'fake' increment by 1 result to user.
       That's why after counter.put() , we won't have return/json return to caller.
       """
-      shard_name = '%s_%s' % (pollword_key, str(random.randint(1, 4)))
+      counter = db_entity.CounterLikeWord.all().filter('name =', pollword_key).filter('Creator =', username).fetch(4)
       
-      if pollword_choose == 'like':
-        counter = db_entity.CounterLikeWord.get_by_key_name(shard_name)
-        if counter is None:
-          counter = db_entity.CounterLikeWord(key_name=shard_name,
-                                              name=pollword_key,
-                                              Creator=username) 
-        counter.value += 1
-        counter.Creator = username
-        logging.info("aaaabbbbb %s", username)
-        counter.put()
-
-      elif pollword_choose == 'dislike':  # dislike
-        counter = db_entity.CounterDislikeWord.get_by_key_name(shard_name)
-        if counter is None:
-          counter = db_entity.CounterDislikeWord(key_name=shard_name,
-                                                 name=pollword_key,
-                                                 Creator=username)
-        counter.value += 1
-        counter.Creator = username
-        counter.put() 
-
+      if not counter:
+          logging.info('%s is going to vote on %s', username, pollword_key)
+          shard_name = '%s_%s' % (pollword_key, str(random.randint(1, 4)))
+          
+          if pollword_choose == 'like':
+            counter = db_entity.CounterLikeWord.get_by_key_name(shard_name)
+            if counter is None:
+              counter = db_entity.CounterLikeWord(key_name=shard_name,
+                                                  name=pollword_key)
+            counter.value += 1
+            counter.Creator = username
+            counter.put()
+          else:
+            counter = db_entity.CounterDislikeWord.get_by_key_name(shard_name)
+        
+            if counter is None:
+              counter = db_entity.CounterDislikeWord(key_name=shard_name,
+                                                     name=pollword_key)
+            counter.value += 1
+            counter.Creator = username
+            counter.put()
+                          
       else:
-        pass
-      
+          logging.info('%s, You can not vote to same word:%s twice.',
+                       username, pollword_key)
+ 
 
 class PollWord(webapp.RequestHandler):
     """ pollword_choose, like or dislike  (TODO) """
