@@ -318,7 +318,6 @@ class Search(webapp2.RequestHandler):
                    
         all_word = []
         search_word = self.request.get('term')
-        search_word = 'milf'
         query = db_entity.Words.all()
         
         

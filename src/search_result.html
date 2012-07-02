@@ -24,7 +24,7 @@
           <div class="word_image">字: {{ search_result.Word }} </div>
             <div class"show_status">
               <span>
-                <b><a name="like_count"> {{ search_result.Like }} </a></b>  喜歡,
+                <b><a name="like_count" id=  {{ search_result.key }}> {{ search_result.Like }} </a></b>  喜歡,
                 <b><a name="dislike_count"> {{ search_result.Dislike }} </a></b> 不喜歡
                 <a name="like" class="pollword" href="#" id=  {{ search_result.key }}>Like</a>
                 <a name="dislike" class="pollword" href="#" id=  {{ search_result.key }}>Dislike</a>
