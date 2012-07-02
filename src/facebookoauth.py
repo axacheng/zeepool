@@ -47,8 +47,9 @@ import os.path
 import time
 import urllib
 import wsgiref.handlers
-
 from django.utils import simplejson as json
+import webapp2
+
 from google.appengine.ext import db
 from google.appengine.ext import webapp
 from google.appengine.ext.webapp import util
@@ -65,7 +66,7 @@ class FacebookUser(db.Model):
     access_token = db.StringProperty(required=True)
 
 
-class BaseHandler(webapp.RequestHandler):
+class BaseHandler(webapp2.RequestHandler):
     @property
     def current_user(self):
         """Returns the logged in Facebook user, or None if unconnected."""
@@ -133,7 +134,7 @@ def set_cookie(response, name, value, domain=None, path="/", expires=None):
     if expires:
         cookie[name]["expires"] = email.utils.formatdate(
             expires, localtime=False, usegmt=True)
-    response.headers._headers.append(("Set-Cookie", cookie.output()[12:]))
+    response.headers.add("Set-Cookie", cookie.output()[12:])
 
 
 def parse_cookie(value):

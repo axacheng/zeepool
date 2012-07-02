@@ -28,6 +28,7 @@ import hmac
 import logging
 import os.path
 import time
+import webapp2
 
 from weibo import APIClient
 from google.appengine.ext import db
@@ -42,7 +43,7 @@ WEIBO_APP_SECRET='ec756023d85cd93846a7fe52d7b6d784'
 # This CALLBACK_URL must be the same as :
 # http://open.weibo.com/apps/1496964127/info/advanced
 # 裡面的 "应用回调页" Otherwise, you would get 'error:redirect_uri_mismatch'
-CALLBACK_URL='http://zeepooling.appspot.com/oauth/weibo_login'  
+CALLBACK_URL='http://zeepooling-hrd.appspot.com/oauth/weibo_login'  
         
         
 class WeiboUser(db.Model):
@@ -55,7 +56,7 @@ class WeiboUser(db.Model):
     updated = db.DateTimeProperty(auto_now=True)
 
 
-class BaseHandler(webapp.RequestHandler):
+class BaseHandler(webapp2.RequestHandler):
     @property
     def current_user(self):
         """Returns the logged in Weibo user, or None if unconnected."""
@@ -151,7 +152,7 @@ def set_cookie(response, name, value, domain=None, path="/", expires=None):
         cookie[name]["expires"] = email.utils.formatdate(
             expires, localtime=False, usegmt=True)
         
-    response.headers._headers.append(("Set-Cookie", cookie.output()[12:]))
+    response.headers.add("Set-Cookie", cookie.output()[12:])
 
 
 def parse_cookie(value):

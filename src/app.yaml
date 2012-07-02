@@ -1,11 +1,8 @@
-application: zeepooling
-version: 2
-runtime: python
+application: zeepooling-hrd
+version: 1
+runtime: python27
 api_version: 1
-
-
-builtins:
-- datastore_admin: on
+threadsafe: true
 
 handlers:
 - url: /stylesheet
@@ -19,15 +16,10 @@ handlers:
   static_files: image/favicon.ico
   upload: image/(.*)
 
-- url: /_ah/login_required
-  script: do_openid_login.py
-
 - url: /.*
-  script: home.py
-
-- url: /admin/.*
-  script: admin.py
-  login: admin
+  script: home.app
   
 
-
+libraries:
+- name: django
+  version: "1.2"

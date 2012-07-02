@@ -133,7 +133,8 @@ $(function(){
   		}//source
   	}); //.autocomplete
 
-	
+
+/*	
 	  // Infinite Scroll
 	  var $container = $('.search_result');
 	  $container.infinitescroll({
@@ -165,5 +166,5 @@ $(function(){
 	    }) // imagesLoaded end
 	  } //newElements end
 	  ); // infinitescroll end
-	  
+*/	  
   }); // search function end

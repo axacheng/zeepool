@@ -14,6 +14,7 @@ import operator
 import os
 import random
 import weibo_oauth_v2
+import webapp2
 
 from django.utils import simplejson
 from google.appengine.api import users
@@ -26,7 +27,7 @@ from google.appengine.ext.webapp.util import run_wsgi_app
     
 MAX_SEARCH_RESULT_PER_PAGE = 3
     
-class Add(webapp.RequestHandler):
+class Add(webapp2.RequestHandler):
     @login_required
     def get(self):
         pass
@@ -69,7 +70,7 @@ class Add(webapp.RequestHandler):
             self.redirect(users.create_login_url(self.request.uri))
 
 
-class AuthHandler(webapp.RequestHandler):
+class AuthHandler(webapp2.RequestHandler):
     """ Compile OpenID/Federated User and Oauth user authentication links.
     
     Read in auth_constants.py, then process OpenIdProviders and OauthProviders
@@ -119,7 +120,7 @@ def basicAuth(func):
     return callf
 
 
-class Edit(webapp.RequestHandler):
+class Edit(webapp2.RequestHandler):
     @basicAuth
     def get(self, username):
         pass
@@ -143,7 +144,7 @@ class Edit(webapp.RequestHandler):
         query.put()
 
 
-class MainPage(webapp.RequestHandler):
+class MainPage(webapp2.RequestHandler):
     """ Represent the MainPage - index.html
     
     First of all, we check OpenID or Oauth user login status by fetching their
@@ -219,70 +220,69 @@ class MainPage(webapp.RequestHandler):
         self.response.out.write(template.render(path, template_dict))
 
 def PollCounter(pollword_choose, pollword_key, username, display_for_search=True):
-  
-    if display_for_search:  # Only display total count result for Search result.
-      total_like = 0
-      total_dislike = 0 
-      counters_like = db_entity.CounterLikeWord.all().filter('name =', pollword_key)
-      counters_dislike = db_entity.CounterDislikeWord.all().filter('name =', pollword_key)
-      
-      for counter_like in counters_like:
-        total_like += counter_like.value
-        
-      for counter_dislike in counters_dislike:
-        total_dislike += counter_dislike.value
-        
-      response = {'total_like_count': total_like,
-                  'total_dislike_count': total_dislike}
-      logging.info(response)
-      
-      return response    
-      
-    else:  
-      """ Add users like or dislike on Word.
-      It'd be called by 'PollWord' handler that requested by /autocom.js 
-      Poll system. find '$(".pollword").live' on autocom.js
-      We probably wont to fetch db again for lighting db loading.
-      And, we would use jQuery to make 'fake' increment by 1 result to user.
-      That's why after counter.put() , we won't have return/json return to caller.
-      """
-      counter = db_entity.CounterLikeWord.all().filter('name =', pollword_key).filter('Creator =', username).fetch(4)
-      
-      if not counter:
-          logging.info('%s is going to vote on %s', username, pollword_key)
-          shard_name = '%s_%s' % (pollword_key, str(random.randint(1, 4)))
-          
-          if pollword_choose == 'like':
-            counter = db_entity.CounterLikeWord.get_by_key_name(shard_name)
-            if counter is None:
-              counter = db_entity.CounterLikeWord(key_name=shard_name,
-                                                  name=pollword_key)
-            counter.value += 1
-            counter.Creator = username
-            counter.put()
-          else:
-            counter = db_entity.CounterDislikeWord.get_by_key_name(shard_name)
-        
-            if counter is None:
-              counter = db_entity.CounterDislikeWord(key_name=shard_name,
-                                                     name=pollword_key)
-            counter.value += 1
-            counter.Creator = username
-            counter.put()
-                          
+  if display_for_search:  # Only display total count result for Search result.
+    total_like = 0
+    total_dislike = 0
+    counters_like = db_entity.CounterLikeWord.all().filter('name =', pollword_key)
+    counters_dislike = db_entity.CounterDislikeWord.all().filter('name =', pollword_key)
+
+    for counter_like in counters_like:
+      total_like += counter_like.value
+
+    for counter_dislike in counters_dislike:
+      total_dislike += counter_dislike.value
+
+    response = {'total_like_count': total_like,
+                'total_dislike_count': total_dislike}
+    logging.info(response)
+
+    return response
+
+  else:
+    """ Add users like or dislike on Word.
+    It'd be called by 'PollWord' handler that requested by /autocom.js
+    Poll system. find '$(".pollword").live' on autocom.js
+    We probably wont to fetch db again for lighting db loading.
+    And, we would use jQuery to make 'fake' increment by 1 result to user.
+    That's why after counter.put() , we won't have return/json return to caller.
+    """
+    counter = db_entity.CounterLikeWord.all().filter('name =', pollword_key).filter('Creator =', username).fetch(4)
+
+    if not counter:
+      logging.info('%s is going to vote on %s', username, pollword_key)
+      shard_name = '%s_%s' % (pollword_key, str(random.randint(1, 4)))
+
+      if pollword_choose == 'like':
+        counter = db_entity.CounterLikeWord.get_by_key_name(shard_name)
+        if counter is None:
+          counter = db_entity.CounterLikeWord(key_name=shard_name,
+                                              name=pollword_key)
+        counter.value += 1
+        counter.Creator = username
+        counter.put()
       else:
-          logging.info('%s, You can not vote to same word:%s twice.',
-                       username, pollword_key)
+        counter = db_entity.CounterDislikeWord.get_by_key_name(shard_name)
+
+        if counter is None:
+          counter = db_entity.CounterDislikeWord(key_name=shard_name,
+                                                 name=pollword_key)
+        counter.value += 1
+        counter.Creator = username
+        counter.put()
+
+    else:
+      logging.info('%s, You can not vote to same word:%s twice.',
+                   username, pollword_key)
  
 
-class PollWord(webapp.RequestHandler):
-    """ pollword_choose, like or dislike  (TODO) """
-    def get(self, pollword_choose, pollword_key):
-        username = "".join(UserLoginHandler(self).keys())
-        PollCounter(pollword_choose, pollword_key, username, display_for_search=False)
+class PollWord(webapp2.RequestHandler):
+  """ pollword_choose, like or dislike  (TODO) """
+  def get(self, pollword_choose, pollword_key):
+    username = "".join(UserLoginHandler(self).keys())
+    PollCounter(pollword_choose, pollword_key, username, display_for_search=False)
     
 
-class Search(webapp.RequestHandler):
+class Search(webapp2.RequestHandler):
     @basicAuth
     def get(self, page):
         """ Search result handler.
@@ -492,7 +492,7 @@ def UserLoginHandler(self):
         return {}
 
         
-class GenerateFakeData(webapp.RequestHandler):
+class GenerateFakeData(webapp2.RequestHandler):
     def get(self):
         fake_word = {'milf1': ['define1', 'example1', 'tag1'],
                      'milf2': ['define2', 'example2', 'tag2'],
@@ -516,7 +516,7 @@ class GenerateFakeData(webapp.RequestHandler):
 
                 
                 
-application = webapp.WSGIApplication(
+app = webapp2.WSGIApplication(
                                      [('/', MainPage),
                                       ('/add', Add),
                                       ('/edit', Edit),
@@ -530,9 +530,3 @@ application = webapp.WSGIApplication(
                                       ('/fake', GenerateFakeData)
                                       ],
                                      debug=True)
-
-def main():
-    run_wsgi_app(application)
-
-if __name__ == "__main__":
-    main()
