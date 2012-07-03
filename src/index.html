@@ -12,8 +12,8 @@
   <script type="text/javascript" src="stylesheet/jeditable.js"></script>
   <script type="text/javascript" src="stylesheet/jeditable.charcounter.js"></script>
   <script type="text/javascript" src="stylesheet/login.js"></script>
-  <!-- <script type="text/javascript" src="stylesheet/jquery.infinitescroll.min.js"></script> -->
-  <!-- <script type="text/javascript" src="stylesheet/jquery.masonry.min.js"></script> -->
+  <script type="text/javascript" src="stylesheet/jquery.infinitescroll.min.js"></script>
+  <script type="text/javascript" src="stylesheet/jquery.masonry.min.js"></script>
 </head>
 
 
@@ -44,22 +44,35 @@
  	     <form action="/add" id="add_form" method="POST" >
     	 	<table>
       		  <tbody>
+      		  	
         	    <tr>
-          		  <th>新字:</th>
-          		  <td><input id="word", name="word" type="text"></td>
+          		  <th><font color="#FF00CC">新字:</font></th>
+          		  <td><input id="word", name="word" type="text"></font></td>
                 </tr>
                 <tr>
-                  <th>解釋:</th>
+                  <th><font color="#FF00CC">解釋:</font></th>
                   <td><textarea id="define", name="define" rows="10" cols="50" type="text"></textarea></td>
                 </tr>       
                 <tr>
-                  <th>造句:</th>
+                  <th><font color="#FF00CC">造句:</font></th>
                   <td><textarea id="example", name="example" rows="10" cols="50" size="60" type="text"></textarea></td>
                 </tr>     
                 <tr>
-                  <th>標籤:</th>
+                  <th><font color="#FF00CC">標籤:</font></th>
                   <td><input id="tag", name="tag" size="30" type="text"></td>
-                </tr> 
+                </tr>
+                <tr>
+                	<select id="word_source"> 
+										<option value="taiwan" selected> 台灣
+										<option value="china"> 中國
+										<option value="hongkong"> 香港
+										<option value="singapore"> 新加坡
+										<option value="us"> 美國
+										<option value="eu"> 歐洲
+										<option value="others"> 其他											
+									</select>
+                </tr>	
+                
               </tbody>
             </table>
      	  <div id="submit">
@@ -84,18 +97,26 @@
 		<a id="top10_link" href="/top10">Top10</a> &nbsp; &nbsp;
 		<div class="total_words">我們目前總共有 <span class="all_words">{{ total_words }}</span> 個字</div> &nbsp; &nbsp;
 	</div>
-	<div id="advert">
-	  AD
-	</div>
 </div> <!-- home -->
 
-{% if user_editable_word %}
-	<div id="edit">	
-		<div id="edit_main">
-      <a id="edit_finish" href="#home">返回首頁</a> &nbsp; &nbsp;
+
+<!-- User edit area -->
+
+<div id="edit">
+	
+	<div id="user_info">
+		<div id="profile_icon"> </div>
+		<div id="user_detail"> </div>
+	</div> <!-- user_info end -->
+
+
+	{% if user_editable_word %}	
+		<div id="user_words_edit">
+      <a id="edit_finish" href="#home">返回首頁</a>
+      
+      <!-- User's added words edit area start from here -->
 			<ul class="thumb">
       {% for list_query in user_editable_word %}
-        {{ list_query }}
 			 <li>
 	       <div class="edit_area" id="{{ list_query.key }}">
 		        <p> {{ list_query.Word }} </p>
@@ -105,17 +126,15 @@
 	       </div>  <!-- edit_area -->
        </li>
 			{% endfor %}
-		  </ul>
-		</div> <!-- edit_main -->
-		
-		<div id="user_cloud">
-			CLOUD
-		</div>
-		
-		<div id="user_report">
-		  Report and Chart
-		</div>
-	</div> <!-- edit -->
-{% endif %}
+		  </ul>  
+		</div> <!-- user_words_edit end -->
+  {% endif %}
+  
+  <!-- User's favorite words(aka:bookmark) area start from here -->
+  <div id="user_favorite_edit">
+  </div> <!-- user_favorite_edit end -->
+</div>  <!-- edit end -->
+
+
 </body>
 </html>

@@ -20,10 +20,5 @@
 			<type>1</type>
 			<location>/Users/axa/Downloads/paulirish-infinite-scroll-0fe6037/jquery.infinitescroll.min.js</location>
 		</link>
-		<link>
-			<name>src/stylesheet/jquery.wookmark.js</name>
-			<type>1</type>
-			<location>/Users/axa/Downloads/test/js/jquery.wookmark.js</location>
-		</link>
 	</linkedResources>
 </projectDescription>

@@ -18,5 +18,10 @@ indexes:
 
 - kind: Words
   properties:
+  - name: Display
+  - name: Word
+
+- kind: Words
+  properties:
   - name: Word
   - name: Word

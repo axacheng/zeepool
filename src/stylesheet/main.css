@@ -24,19 +24,7 @@ body{
 }
 
 
-#edit{
-	width: 100%;
-	height: 100%;
-	top: 0;
-	opacity: 0;
-	left: 100%;
-	position: absolute;
-	-webkit-transition: all 1.5s ease-in-out;
-	-webkit-transform: rotate3d(0, 0, 0, 10deg);
-	z-index: 2;
-  border: 1px solid;
-  border-color:#FFAA00;
-}
+
 
 
 #banner{
@@ -80,8 +68,12 @@ body{
   border-color:#FFAA00;
 }
 
+/* Search result word div style
+ * If jquery.infiitescroll doesn't work properly, we could try to remove .post style!
+ * 
+ * */
 
-.post {
+.word_main {
   width: 300px;
   margin: 10px;
   float: left;
@@ -91,7 +83,7 @@ body{
 
 .word_image{
 	width:280px;
-	height: 100px;
+	height: 50px;
 	padding: 5px;
 	background-color: gray;
 }
@@ -129,29 +121,73 @@ body{
 }
 
 
-#advert{
-  width:30%;
-  height:10%;
-  position:absolute;
-  right:0%;
-  bottom:0%;
-}
-
 
 #add_main{
 	display:none;
 }
 
 
-#edit_main{
-  border-style:dashed;
-  width:70%;
-  height:100%;
-  position:absolute;
-  left:0%;
-  top:1%;
+/* index.html_edit */
+#edit{
+	width: 100%;
+	height: 100%;
+	top: 0;
+	opacity: 0;
+	left: 100%;
+	position: absolute;
+	-webkit-transition: all 1.5s ease-in-out;
+	-webkit-transform: rotate3d(0, 0, 0, 10deg);
+	z-index: 2;
+  border: 1px solid;
+  border-color:#FFAA00;
 }
 
+#user_info{
+  width:100%;
+  height:15%;
+  position:absolute;
+  background-color: red;
+  left:0%;
+  top:0%;
+}
+
+#profile_icon{
+  width:20%;
+  height:100%;
+  position:absolute;
+  background-color: blue;
+  left:0%;
+  top:0%;	
+}
+
+#user_detail{
+  width:80%;
+  height:100%;
+  position:absolute;
+  background-color: yellow;
+  left:20%;
+  top:0%;		
+}
+
+#user_words_edit{
+  width:100%;
+  height:100%;
+  position:absolute;
+  background-color: red;
+  left:0%;
+  top:15%;
+  border-style:dashed;
+}
+
+#user_favorite_edit{
+  width:100%;
+  height:100%;
+  position:absolute;
+  background-color: pink;
+  left:0%;
+  top:15%;
+  border-style:dashed;	
+}
 
 ul.thumb {
 float: left;
@@ -169,24 +205,4 @@ margin: 0px;
 padding: 5px;
 position: relative;
 width: 200px;
-}
-
-
-#user_cloud{
-	border-style:dashed;
-  width:28%;
-  height:50%;
-  position:absolute;
-  right:0%;
-  top:1%;
-}
-
-
-#user_report{
-	border-style:dashed;
-  width:28%;
-  height:40%;
-  position:absolute;
-  right:0%;
-  bottom:0%;
 }

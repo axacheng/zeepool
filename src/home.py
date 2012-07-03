@@ -320,7 +320,7 @@ class Search(webapp2.RequestHandler):
         search_word = self.request.get('term')
         query = db_entity.Words.all()
         
-        
+        query.filter("Display", True)
         query.filter("Word >=", unicode(search_word))
         query.filter("Word <=", unicode(search_word) + u'\ufffd')
         result = query.fetch(500, 0)
